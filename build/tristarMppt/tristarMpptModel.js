@@ -222,7 +222,7 @@ class TristarModel {
             descr: "all DIP switch positions bitfield",
             role: "state",
             unit: "",
-            readFunc: (tmd) => tmd.hr[48],
+            readFunc: (tmd) => tmd.hr[48].toString(2),
             value: 0,
         };
         this["state.led"] = {

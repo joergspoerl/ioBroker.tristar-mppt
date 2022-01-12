@@ -269,7 +269,7 @@ export class TristarModel {
 		descr: "all DIP switch positions bitfield",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[48],
+		readFunc:  (tmd: TristarModbusData) => tmd.hr[48].toString(2),
 		value: 0,
 	};
 
