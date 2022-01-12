@@ -106,6 +106,12 @@ export const charge_states : IChargeStates = {
 	9 : "SLAVE",
 }
 
+function byteString(n) {
+	if (n < 0 || n > 255 || n % 1 !== 0) {
+		throw new Error(n + " does not fit in a byte");
+	}
+	return ("000000000" + n.toString(2)).substr(-8)
+}
 
 export class TristarModel {
 
@@ -244,7 +250,7 @@ export class TristarModel {
 		descr: "charge state",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => 0, //charge_states[tmd.hr[50]],
+		readFunc:  (tmd: TristarModbusData) => charge_states[tmd.hr[50]],
 		value: 0,
 	};
 	"state.hourmeter":    TristarMetaEntry = {
@@ -269,7 +275,7 @@ export class TristarModel {
 		descr: "all DIP switch positions bitfield",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[48].toString(2),
+		readFunc:  (tmd: TristarModbusData) => byteString(tmd.hr[48]),
 		value: 0,
 	};
 
