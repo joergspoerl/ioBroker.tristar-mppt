@@ -98,18 +98,19 @@ class TristarMpptTCPModbus {
         // 	//console.log("DATA", self.data)
         // }
     }
-    async connectAndRequest(hostname, port, unitId) {
+    async connectAndRequest(adapterConfig) {
+        const config = adapterConfig;
         return new Promise((resolve, reject) => {
-            console.log("connect to host: ", hostname);
-            console.log("connect to unitId: ", unitId);
+            console.log("connect to host: ", config.hostname);
+            console.log("connect to unitId: ", config.unitId);
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             // create a modbus client
             const netSocket = new net.Socket();
-            const client = new modbus.client.TCP(netSocket, unitId);
+            const client = new modbus.client.TCP(netSocket, config.unitId);
             netSocket.connect({
-                "host": hostname,
-                "port": port,
+                "host": config.hostname,
+                "port": config.port,
                 // 'autoReconnect': true,
                 // 'reconnectTimeout': 4000,
                 // 'timeout': 8000,
@@ -120,7 +121,7 @@ class TristarMpptTCPModbus {
                     // transform in older format
                     // const hr = { register: (tristarHoldingRegister.response as any)._body.valuesAsArray};
                     const hr = tristarHoldingRegister.response._body.valuesAsArray;
-                    self.tristarData.update(hr);
+                    self.tristarData.update(hr, config);
                     console.log("tristarMpptData: ", self.tristarData);
                     netSocket.end();
                     resolve(self.tristarData);

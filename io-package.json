@@ -74,7 +74,10 @@
 		"option1": true,
 		"option2": "42",
 		"hostname": "TSMPPT10480676.home.arpa",
-		"interval": 1
+		"port": 502,
+		"unitId": 1,
+		"interval": 1,
+		"installedWP": 0
 	},
 	"objects": [],
 	"instanceObjects": []

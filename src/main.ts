@@ -115,7 +115,7 @@ class TristarMppt extends utils.Adapter {
 
 
 	private async updateStates(): Promise<void> {
-		await this.tristar.connectAndRequest(this.config.hostname, 502, 1)
+		await this.tristar.connectAndRequest(this.config)
 
 		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
 			const v = value as TristarMetaEntry;

@@ -7,7 +7,10 @@ declare global {
 			option1: boolean;
 			option2: string;
 			hostname: string;
+			port: number;
+			unitId: number;
 			interval: number;
+			installedWP: number;
 		}
 	}
 }

@@ -114,7 +114,7 @@ class TristarMppt extends utils.Adapter {
         }
     }
     async updateStates() {
-        await this.tristar.connectAndRequest(this.config.hostname, 502, 1);
+        await this.tristar.connectAndRequest(this.config);
         for (const [key, value] of Object.entries(this.tristar.tristarData)) {
             const v = value;
             await this.setStateAsync(key, {
