@@ -91,7 +91,40 @@ function resolveFaultsBitfield (value: number) : Array<string> {
 	}
 	return r
 }
-
+export const alarmTextArray = [
+	"RTS open",
+	"RTS shorted",
+	"RTS disconnected",
+	"Heatsink temp sensor open",
+	"Heatsink temp sensor shorted",
+	"High temperature current limit",
+	"Current limit",
+	"Current offset",
+	"Battery sense out of range",
+	"Battery sense disconnected",
+	"Uncalibrated",
+	"RTS miswire",
+	"High voltage disconnect",
+	"Undefined",
+	"system miswire",
+	"MOSFET open",
+	"P12 voltage off",
+	"High input voltage current limit",
+	"ADC input max",
+	"Controller was reset",
+	"Alarm 21",
+	"Alarm 22",
+	"Alarm 23",
+	"Alarm 24",
+]
+function resolveAlarmBitfield (value: number) : Array<string> {
+	const r : Array<string> = [];
+	for (let i = 0;i<24;i++) {
+		if ((value & 0b00000001) === 1) r.push(alarmTextArray[i])
+		value = value >> 1
+	}
+	return r
+}
 
 export interface IChargeStates {
 	[index: number]:string
@@ -107,6 +140,29 @@ export const charge_states : IChargeStates = {
 	7 : "FLOAT",
 	8 : "EQUALIZE",
 	9 : "SLAVE",
+}
+
+export const ledState: {[index: number]:string} = {
+	0: "LED_START",
+	1: "LED_START2",
+	2: "LED_BRANCH",
+	3: "FAST GREEN BLINK",
+	4: "SLOW GREEN BLINK",
+	5: "GREEN BLINK, 1HZ",
+	6: "GREEN_LED",
+	7: "UNDEFINED",
+	8: "YELLOW_LED",
+	9: "UNDEFINED",
+	10: "BLINK_RED_LED",
+	11: "RED_LED",
+	12: "R-Y-G ERROR",
+	13: "R/Y-G ERROR",
+	14: "R/G-Y ERROR",
+	15: "R-Y ERROR (HTD)",
+	16: "R-G ERROR (HVD)",
+	17: "R/Y-G/Y ERROR",
+	18: "G/Y/R ERROR",
+	19: "G/Y/R x 2",
 }
 
 function byteString(n:number): string {
@@ -294,9 +350,18 @@ export class TristarModel {
 		descr: "State of LED indications",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[49],
+		readFunc:  (tmd: TristarModbusData) => JSON.stringify(ledState[tmd.hr[49]]) ,
 		value: 0,
 	};
+
+	"state.alarm":    TristarMetaEntry = {
+		descr: "State of LED indications",
+		role:  "state",
+		unit:  "",
+		readFunc:  (tmd: TristarModbusData) => JSON.stringify(resolveAlarmBitfield(to32bitNumber(tmd.hr[46],tmd.hr[47]))) ,
+		value: 0,
+	};
+
 
 	"today.batt.Vmin":    TristarMetaEntry = {
 		descr: "battery minimal voltage",

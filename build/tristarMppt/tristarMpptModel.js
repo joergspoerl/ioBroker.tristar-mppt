@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TristarModel = exports.charge_states = exports.faultsTextArray = exports.TristarScale = exports.TristarModbusData = void 0;
+exports.TristarModel = exports.ledState = exports.charge_states = exports.alarmTextArray = exports.faultsTextArray = exports.TristarScale = exports.TristarModbusData = void 0;
 class TristarModbusData {
     constructor(hr, config) {
         this.hr = hr;
@@ -67,6 +67,41 @@ function resolveFaultsBitfield(value) {
     }
     return r;
 }
+exports.alarmTextArray = [
+    "RTS open",
+    "RTS shorted",
+    "RTS disconnected",
+    "Heatsink temp sensor open",
+    "Heatsink temp sensor shorted",
+    "High temperature current limit",
+    "Current limit",
+    "Current offset",
+    "Battery sense out of range",
+    "Battery sense disconnected",
+    "Uncalibrated",
+    "RTS miswire",
+    "High voltage disconnect",
+    "Undefined",
+    "system miswire",
+    "MOSFET open",
+    "P12 voltage off",
+    "High input voltage current limit",
+    "ADC input max",
+    "Controller was reset",
+    "Alarm 21",
+    "Alarm 22",
+    "Alarm 23",
+    "Alarm 24",
+];
+function resolveAlarmBitfield(value) {
+    const r = [];
+    for (let i = 0; i < 24; i++) {
+        if ((value & 0b00000001) === 1)
+            r.push(exports.alarmTextArray[i]);
+        value = value >> 1;
+    }
+    return r;
+}
 exports.charge_states = {
     0: "START",
     1: "NIGHT_CHECK",
@@ -78,6 +113,28 @@ exports.charge_states = {
     7: "FLOAT",
     8: "EQUALIZE",
     9: "SLAVE",
+};
+exports.ledState = {
+    0: "LED_START",
+    1: "LED_START2",
+    2: "LED_BRANCH",
+    3: "FAST GREEN BLINK",
+    4: "SLOW GREEN BLINK",
+    5: "GREEN BLINK, 1HZ",
+    6: "GREEN_LED",
+    7: "UNDEFINED",
+    8: "YELLOW_LED",
+    9: "UNDEFINED",
+    10: "BLINK_RED_LED",
+    11: "RED_LED",
+    12: "R-Y-G ERROR",
+    13: "R/Y-G ERROR",
+    14: "R/G-Y ERROR",
+    15: "R-Y ERROR (HTD)",
+    16: "R-G ERROR (HVD)",
+    17: "R/Y-G/Y ERROR",
+    18: "G/Y/R ERROR",
+    19: "G/Y/R x 2",
 };
 function byteString(n) {
     if (n < 0 || n > 255 || n % 1 !== 0) {
@@ -244,7 +301,14 @@ class TristarModel {
             descr: "State of LED indications",
             role: "state",
             unit: "",
-            readFunc: (tmd) => tmd.hr[49],
+            readFunc: (tmd) => JSON.stringify(exports.ledState[tmd.hr[49]]),
+            value: 0,
+        };
+        this["state.alarm"] = {
+            descr: "State of LED indications",
+            role: "state",
+            unit: "",
+            readFunc: (tmd) => JSON.stringify(resolveAlarmBitfield(to32bitNumber(tmd.hr[46], tmd.hr[47]))),
             value: 0,
         };
         this["today.batt.Vmin"] = {
