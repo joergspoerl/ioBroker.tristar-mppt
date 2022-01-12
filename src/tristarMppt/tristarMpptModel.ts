@@ -61,10 +61,39 @@ function to32bitNumber (hi: number, lo: number) : number {
 	return (hi << 16) + lo
 }
 
-export interface Icharge_states {
+export const faultsTextArray = [
+	"overcurrent",
+	"FETs shorted",
+	"software bug",
+	"battery HVD",
+	"array HVD",
+	"settings switch changed",
+	"custom settings edit",
+	"RTS shorted",
+	"RTS disconnected",
+	"EEPROM retry limit",
+	"Reserved",
+	"Slave Control Timeout",
+	"Fault 13",
+	"Fault 14",
+	"Fault 15",
+	"Fault 16",
+]
+
+function resolveFaultsBitfield (value: number) : Array<string> {
+	const r : Array<string> = [];
+	for (let i = 0;i<16;i++) {
+		if ((value & 0b00000001) === 1) r.push(faultsTextArray[i])
+		value = value >> 1
+	}
+	return r
+}
+
+
+export interface IChargeStates {
 	[index: number]:string
 }
-export const charge_states : Icharge_states = {
+export const charge_states : IChargeStates = {
 	0 : "START",
 	1 : "NIGHT_CHECK",
 	2 : "DISCONNECT",
@@ -215,7 +244,7 @@ export class TristarModel {
 		descr: "charge state",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => charge_states[tmd.hr[50]],
+		readFunc:  (tmd: TristarModbusData) => 0, //charge_states[tmd.hr[50]],
 		value: 0,
 	};
 	"state.hourmeter":    TristarMetaEntry = {
@@ -231,25 +260,10 @@ export class TristarModel {
 		descr: "all Controller faults bitfield",
 		role:  "state",
 		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[44],
+		readFunc:  (tmd: TristarModbusData) => JSON.stringify(resolveFaultsBitfield(tmd.hr[44])),
 		value: 0,
 	};
 
-	"state.alarm_HI":    TristarMetaEntry = {
-		descr: "alarm bitfield – HI word",
-		role:  "state",
-		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[46],
-		value: 0,
-	};
-
-	"state.alarm_LO":    TristarMetaEntry = {
-		descr: "alarm bitfield – LO word",
-		role:  "state",
-		unit:  "",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[47],
-		value: 0,
-	};
 
 	"state.dip":    TristarMetaEntry = {
 		descr: "all DIP switch positions bitfield",

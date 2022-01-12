@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TristarMpptMeta = exports.TristarModel = exports.charge_states = exports.TristarScale = exports.TristarModbusData = void 0;
+exports.TristarMpptMeta = exports.TristarModel = exports.charge_states = exports.faultsTextArray = exports.TristarScale = exports.TristarModbusData = void 0;
 class TristarModbusData {
     constructor(hr) {
         this.hr = hr;
@@ -37,6 +37,33 @@ function round(value) {
 }
 function to32bitNumber(hi, lo) {
     return (hi << 16) + lo;
+}
+exports.faultsTextArray = [
+    "overcurrent",
+    "FETs shorted",
+    "software bug",
+    "battery HVD",
+    "array HVD",
+    "settings switch changed",
+    "custom settings edit",
+    "RTS shorted",
+    "RTS disconnected",
+    "EEPROM retry limit",
+    "Reserved",
+    "Slave Control Timeout",
+    "Fault 13",
+    "Fault 14",
+    "Fault 15",
+    "Fault 16",
+];
+function resolveFaultsBitfield(value) {
+    const r = [];
+    for (let i = 0; i < 16; i++) {
+        if ((value & 0b00000001) === 1)
+            r.push(exports.faultsTextArray[i]);
+        value = value >> 1;
+    }
+    return r;
 }
 exports.charge_states = {
     0: "START",
@@ -174,7 +201,7 @@ class TristarModel {
             descr: "charge state",
             role: "state",
             unit: "",
-            readFunc: (tmd) => exports.charge_states[tmd.hr[50]],
+            readFunc: (tmd) => 0,
             value: 0,
         };
         this["state.hourmeter"] = {
@@ -188,21 +215,7 @@ class TristarModel {
             descr: "all Controller faults bitfield",
             role: "state",
             unit: "",
-            readFunc: (tmd) => tmd.hr[44],
-            value: 0,
-        };
-        this["state.alarm_HI"] = {
-            descr: "alarm bitfield – HI word",
-            role: "state",
-            unit: "",
-            readFunc: (tmd) => tmd.hr[46],
-            value: 0,
-        };
-        this["state.alarm_LO"] = {
-            descr: "alarm bitfield – LO word",
-            role: "state",
-            unit: "",
-            readFunc: (tmd) => tmd.hr[47],
+            readFunc: (tmd) => JSON.stringify(resolveFaultsBitfield(tmd.hr[44])),
             value: 0,
         };
         this["state.dip"] = {
