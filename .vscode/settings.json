@@ -1,0 +1,19 @@
+{
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"eslint.enable": true,
+	"json.schemas": [
+		{
+			"fileMatch": [
+				"io-package.json"
+			],
+			"url": "https://json.schemastore.org/io-package"
+		}
+	],
+	"cSpell.words": [
+		"jsmodbus",
+		"modbus",
+		"Mppt",
+		"tristar",
+		"TSMPPT"
+	]
+}

@@ -1,0 +1,81 @@
+{
+	"common": {
+		"name": "tristar-mppt",
+		"version": "0.0.1",
+		"news": {
+			"0.0.1": {
+				"en": "initial release",
+				"de": "Erstveröffentlichung",
+				"ru": "Начальная версия",
+				"pt": "lançamento inicial",
+				"nl": "Eerste uitgave",
+				"fr": "Première version",
+				"it": "Versione iniziale",
+				"es": "Versión inicial",
+				"pl": "Pierwsze wydanie",
+				"zh-cn": "首次出版"
+			}
+		},
+		"title": "tristar-mppt",
+		"titleLang": {
+			"en": "tristar-mppt",
+			"de": "tristar-mppt",
+			"ru": "тристар-mppt",
+			"pt": "tristar-mppt",
+			"nl": "tristar-mppt",
+			"fr": "tristar-mppt",
+			"it": "tristar-mppt",
+			"es": "tristar-mppt",
+			"pl": "tristar-mppt",
+			"zh-cn": "三星mppt"
+		},
+		"desc": {
+			"en": "Tristar MPPT Solar",
+			"de": "Tristar MPPT Solar",
+			"ru": "Тристар MPPT Солнечная",
+			"pt": "Tristar MPPT Solar",
+			"nl": "Tristar MPPT Solar",
+			"fr": "Tristar MPPT Solaire",
+			"it": "Tristar MPPT solare",
+			"es": "Tristar MPPT solar",
+			"pl": "Tristar MPPT Solar",
+			"zh-cn": "三星MPPT太阳能"
+		},
+		"authors": [
+			"joerg <joerg.spoerl@gmx.de>"
+		],
+		"keywords": [
+			"ioBroker",
+			"template",
+			"Smart Home",
+			"home automation"
+		],
+		"license": "MIT",
+		"platform": "Javascript/Node.js",
+		"main": "build/main.js",
+		"icon": "tristar-mppt.png",
+		"enabled": true,
+		"extIcon": "https://raw.githubusercontent.com/joergspoerl/ioBroker.tristar-mppt/main/admin/tristar-mppt.png",
+		"readme": "https://github.com/joergspoerl/ioBroker.tristar-mppt/blob/main/README.md",
+		"loglevel": "info",
+		"mode": "daemon",
+		"type": "energy",
+		"compact": true,
+		"connectionType": "local",
+		"dataSource": "poll",
+		"materialize": true,
+		"dependencies": [
+			{
+				"js-controller": ">=2.0.0"
+			}
+		]
+	},
+	"native": {
+		"option1": true,
+		"option2": "42",
+		"hostname": "TSMPPT10480676.home.arpa",
+		"interval": 1
+	},
+	"objects": [],
+	"instanceObjects": []
+}

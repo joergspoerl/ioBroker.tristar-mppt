@@ -1,0 +1,37 @@
+{
+	"cli": true,
+	"target": "directory",
+	"adapterName": "tristar-mppt",
+	"title": "tristar-mppt",
+	"description": "Tristar MPPT Solar",
+	"expert": "no",
+	"features": [
+		"adapter"
+	],
+	"adminFeatures": [],
+	"type": "energy",
+	"startMode": "daemon",
+	"connectionType": "local",
+	"dataSource": "poll",
+	"connectionIndicator": "no",
+	"language": "TypeScript",
+	"adminReact": "no",
+	"tools": [
+		"ESLint"
+	],
+	"releaseScript": "yes",
+	"devServer": "yes",
+	"devServerPort": 8081,
+	"indentation": "Tab",
+	"quotes": "double",
+	"es6class": "yes",
+	"authorName": "joerg",
+	"authorGithub": "joergspoerl",
+	"authorEmail": "joerg.spoerl@gmx.de",
+	"gitRemoteProtocol": "HTTPS",
+	"gitCommit": "no",
+	"defaultBranch": "main",
+	"license": "MIT License",
+	"dependabot": "no",
+	"creatorVersion": "2.0.1"
+}

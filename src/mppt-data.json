@@ -1,0 +1,79 @@
+{
+    "scale": {
+        "V_PU_hi": 180,
+        "V_PU_lo": 0,
+        "I_PU_hi": 80,
+        "I_PU_lo": 0,
+        "V_PU": 180,
+        "v_scale": 0.0054931640625,
+        "i_scale": 0.00244140625,
+        "p_scale": 0.10986328125
+    },
+    "battRegister": {
+        "battsV": 2445,
+        "battsSensedV": 2440,
+        "battsI": 0,
+        "arrayV": 60,
+        "arrayI": 0,
+        "statenum": 3,
+        "hsTemp": 4,
+        "rtsTemp": 5,
+        "outPower": 0,
+        "inPower": 0
+    },
+    "adc": {
+        "adc_vb_f_med": 13.43,
+        "adc_vbterm_f": 13.44,
+        "adc_vbs_f": 13.4,
+        "adc_va_f": 0.33,
+        "adc_ib_f_shadow": 0,
+        "adc_ia_f_shadow": 0,
+        "adc_p12_f": 13.38,
+        "adc_p3_f": 3.62,
+        "adc_pmeter_f": 12.95,
+        "adc_p18_f": 1.78,
+        "adc_v_ref": 2.04
+    },
+    "temp": {
+        "T_hs": 4,
+        "T_rts": 5,
+        "T_batt": 5
+    },
+    "state": {
+        "adc_vb_f_1m": 2446,
+        "adc_ib_f_1m": 5,
+        "vb_min": 25,
+        "vb_max": 3017,
+        "hourmeter_HI": 1,
+        "hourmeter_LO": 21481,
+        "fault": 0,
+        "alarm_HI": 0,
+        "alarm_LO": 0,
+        "dip": 188,
+        "led": 6
+    },
+    "batt": {
+        "battsV": 13.43,
+        "battsSensedV": 13.4,
+        "battsI": 0,
+        "arrayV": 0.33,
+        "arrayI": 0,
+        "statenum": 3,
+        "hsTemp": 4,
+        "rtsTemp": 5,
+        "outPower": 0,
+        "inPower": 0
+    },
+    "today": {
+        "vb_min_daily": 12.84,
+        "vb_max_daily": 14.69,
+        "va_max_daily": 1.05,
+        "Ahc_daily": 0,
+        "whc_daily": 0,
+        "flags_daily": 9,
+        "Pout_max_daily": 0,
+        "Tb_min_daily": 5,
+        "Tb_max_daily": 25,
+        "fault_daily": 0
+    }
+}
