@@ -148,6 +148,7 @@ class TristarModel {
             descr: "Battery voltage, filtered",
             unit: "V",
             role: "value.voltage",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -166,6 +167,7 @@ class TristarModel {
             descr: "Heatsink temperature C √ -127 to + 127",
             role: "value.temperature",
             unit: "°C",
+            type: "number",
             readFunc: (tmd) => tmd.hr[35],
             value: 0,
         };
@@ -173,6 +175,7 @@ class TristarModel {
             descr: "RTS temperature (0x80 = disconnect)  C √ -127 to + 127",
             role: "value.temperature",
             unit: "°C",
+            type: "number",
             readFunc: (tmd) => tmd.hr[36],
             value: 0,
         };
@@ -180,6 +183,7 @@ class TristarModel {
             descr: "Battery regulation temperature C √ -127 to + 127",
             role: "value.temperature",
             unit: "°C",
+            type: "number",
             readFunc: (tmd) => tmd.hr[37],
             value: 0,
         };
@@ -188,6 +192,7 @@ class TristarModel {
             descr: "Battery voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -195,6 +200,7 @@ class TristarModel {
             descr: "Battery sensed voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[26]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -202,6 +208,7 @@ class TristarModel {
             descr: "Battery charge current",
             role: "value.current",
             unit: "A",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[28]) * tmd.scale.i, 2),
             value: 0,
         };
@@ -209,6 +216,7 @@ class TristarModel {
             descr: "Output power",
             role: "value",
             unit: "W",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[58]) * tmd.scale.p, 2),
             value: 0,
         };
@@ -216,6 +224,7 @@ class TristarModel {
             descr: "Minimum battery voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[40]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -223,6 +232,7 @@ class TristarModel {
             descr: "Maximal battery voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[41]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -230,6 +240,7 @@ class TristarModel {
             descr: "Battery voltage, filtered(τ ≈ 1min)",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[38]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -237,6 +248,7 @@ class TristarModel {
             descr: "Charging current, filtered(τ ≈ 1min)",
             role: "value.current",
             unit: "I",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[39]) * tmd.scale.i, 2),
             value: 0,
         };
@@ -245,6 +257,7 @@ class TristarModel {
             descr: "Array voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[27]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -252,6 +265,7 @@ class TristarModel {
             descr: "Array current",
             role: "value.current",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[29]) * tmd.scale.i, 2),
             value: 0,
         };
@@ -259,6 +273,7 @@ class TristarModel {
             descr: "Input power",
             role: "value",
             unit: "W",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[59]) * tmd.scale.p, 0),
             value: 0,
         };
@@ -266,6 +281,7 @@ class TristarModel {
             descr: "Input power",
             role: "value",
             unit: "%",
+            type: "number",
             readFunc: (tmd) => round(tmd.config.installedWP / 100 * signedToInteger(tmd.hr[59]) * tmd.scale.p, 0),
             value: 0,
         };
@@ -273,6 +289,7 @@ class TristarModel {
             descr: "charge state",
             role: "state",
             unit: "",
+            type: "string",
             readFunc: (tmd) => exports.charge_states[tmd.hr[50]],
             value: 0,
         };
@@ -280,6 +297,7 @@ class TristarModel {
             descr: "hourmeter",
             role: "state",
             unit: "h",
+            type: "number",
             readFunc: (tmd) => to32bitNumber(tmd.hr[42], tmd.hr[43]),
             value: 0,
         };
@@ -287,6 +305,7 @@ class TristarModel {
             descr: "all Controller faults bitfield",
             role: "state",
             unit: "",
+            type: "array",
             readFunc: (tmd) => JSON.stringify(resolveFaultsBitfield(tmd.hr[44])),
             value: 0,
         };
@@ -294,6 +313,7 @@ class TristarModel {
             descr: "all DIP switch positions bitfield",
             role: "state",
             unit: "",
+            type: "string",
             readFunc: (tmd) => byteString(tmd.hr[48]),
             value: 0,
         };
@@ -301,13 +321,15 @@ class TristarModel {
             descr: "State of LED indications",
             role: "state",
             unit: "",
-            readFunc: (tmd) => JSON.stringify(exports.ledState[tmd.hr[49]]),
+            type: "string",
+            readFunc: (tmd) => exports.ledState[tmd.hr[49]],
             value: 0,
         };
         this["state.alarm"] = {
             descr: "State of LED indications",
             role: "state",
             unit: "",
+            type: "array",
             readFunc: (tmd) => JSON.stringify(resolveAlarmBitfield(to32bitNumber(tmd.hr[46], tmd.hr[47]))),
             value: 0,
         };
@@ -315,6 +337,7 @@ class TristarModel {
             descr: "battery minimal voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[64]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -322,6 +345,7 @@ class TristarModel {
             descr: "battery maximal voltage",
             role: "value.voltage",
             unit: "V",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[65]) * tmd.scale.v, 2),
             value: 0,
         };
@@ -329,6 +353,7 @@ class TristarModel {
             descr: "battery maximal current",
             role: "value.current",
             unit: "A",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[65]) * tmd.scale.i, 2),
             value: 0,
         };
@@ -336,6 +361,7 @@ class TristarModel {
             descr: "Amper hours",
             role: "state",
             unit: "Ah",
+            type: "number",
             readFunc: (tmd) => tmd.hr[67] * 0.1,
             value: 0,
         };
@@ -343,6 +369,7 @@ class TristarModel {
             descr: "watt hours",
             role: "state",
             unit: "Wh",
+            type: "number",
             readFunc: (tmd) => tmd.hr[68],
             value: 0,
         };
@@ -350,6 +377,7 @@ class TristarModel {
             descr: "flags",
             role: "state",
             unit: "",
+            type: "number",
             readFunc: (tmd) => tmd.hr[69],
             value: 0,
         };
@@ -357,6 +385,7 @@ class TristarModel {
             descr: "maximal power output",
             role: "value",
             unit: "W",
+            type: "number",
             readFunc: (tmd) => round(signedToInteger(tmd.hr[70]) * tmd.scale.p, 0),
             value: 0,
         };
@@ -364,6 +393,7 @@ class TristarModel {
             descr: "minimal battery temperature",
             role: "value.temperature",
             unit: "°C",
+            type: "number",
             readFunc: (tmd) => tmd.hr[71],
             value: 0,
         };
@@ -371,6 +401,7 @@ class TristarModel {
             descr: "maximal battery temperature",
             role: "value.temperature",
             unit: "°C",
+            type: "number",
             readFunc: (tmd) => tmd.hr[72],
             value: 0,
         };
@@ -378,6 +409,7 @@ class TristarModel {
             descr: "fault",
             role: "state",
             unit: "",
+            type: "number",
             readFunc: (tmd) => tmd.hr[73],
             value: 0,
         };
@@ -394,50 +426,4 @@ class TristarModel {
     }
 }
 exports.TristarModel = TristarModel;
-// export class TristarMpptMeta
-// {
-// 	adc = {
-// 		// Filtered ADC
-// 		adc_vb_f_med:    { descr: "Battery voltage, filtered",       unit: "V" },
-// 		adc_vbterm_f:    { descr: "Batt.Terminal voltage, filtered", unit: "V" },
-// 		adc_vbs_f:       { descr: "Battery Sense voltage, filtered", unit: "V" },
-// 		adc_va_f:        { descr: "Array voltage, filtered",         unit: "V" },
-// 		adc_ib_f_shadow: { descr: "Battery current, filtered",       unit: "V" },
-// 		adc_ia_f_shadow: { descr: "Array current, filtered",         unit: "A" },
-// 		adc_p12_f:       { descr: "12 volt supply, filtered",        unit: "V" },
-// 		adc_p3_f:        { descr: "3 volt supply, filtered",         unit: "V" },
-// 		adc_pmeter_f:    { descr: "MeterBus voltage, filtered",      unit: "V" },
-// 		adc_p18_f:       { descr: "1.8 volt supply, filtered",       unit: "V" },
-// 		adc_v_ref:       { descr: "reference voltage",               unit: "V" }
-// 	}
-// 	batt = {
-// 		statenum:     { descr: "State number",            unit: ""  },
-// 	}
-// 	today = {
-// 		// Logger – Today’s values
-// 		vb_min_daily:   { descr: "battery minimal voltage",   unit: "V"  },
-// 		vb_max_daily:   { descr: "battery maximal voltage",   unit: "V"  },
-// 		va_max_daily:   { descr: "battery maximal current",   unit: "A"  },
-// 		Ahc_daily:      { descr: "Amper hours",               unit: "Ah" },
-// 		whc_daily:      { descr: "watt hours",                unit: "Wh" },
-// 		flags_daily:    { descr: "flags",                     unit: ""   },
-// 		Pout_max_daily: { descr: "max power output",          unit: "W"  },
-// 		Tb_min_daily:   { descr: "min",                       unit: ""   },
-// 		Tb_max_daily:   { descr: "max",                       unit: ""   },
-// 		fault_daily:    { descr: "fault",                     unit: "W"  },
-// 	}
-// 	state = {
-// 		adc_vb_f_1m: { descr: "Battery voltage, filtered(τ ≈ 1min) V √ n·V_PU·2 - 15", unit: "V" },
-// 		adc_ib_f_1m: { descr: "Charging current, filtered(τ ≈       1min)    A √ n·I_PU·2 - 15", unit: "A" },
-// 		vb_min: { descr: "Minimum battery voltage V √ n·V_PU·2 - 15", unit: "V" },
-// 		vb_max: { descr: "Minimum battery voltage V √ n·V_PU·2 - 15", unit: "V" },
-// 		hourmeter_HI: { descr: "hourmeter, HI word h", unit: "h" },
-// 		hourmeter_LO: { descr: "hourmeter, LO word", unit: "h" },
-// 		fault: { descr: "all Controller faults bitfield", unit: "" },
-// 		alarm_HI: { descr: "alarm bitfield – HI word", unit: "bits" },
-// 		alarm_LO: { descr: "alarm bitfield – LO word", unit: "bits" },
-// 		dip: { descr: "all DIP switch positions bitfield", unit: "bits" },
-// 		led: { descr: "State of LED indications", unit: "" }
-// 	}
-// }
 //# sourceMappingURL=tristarMpptModel.js.map

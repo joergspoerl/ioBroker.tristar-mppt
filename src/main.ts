@@ -101,7 +101,7 @@ class TristarMppt extends utils.Adapter {
 				type: "state",
 				common: {
 					name: v.descr,
-					type: "number",
+					type: v.type,
 					role: "state",
 					read: true,
 					write: false,
