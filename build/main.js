@@ -73,7 +73,7 @@ class TristarMppt extends utils.Adapter {
             //console.log("tick")
         }, this.config.interval * 1000);
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-        this.subscribeStates("testVariable");
+        this.subscribeStates("control.*");
         // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
         // this.subscribeStates("lights.*");
         // Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
@@ -117,10 +117,16 @@ class TristarMppt extends utils.Adapter {
         await this.tristar.connectAndRequest(this.config);
         for (const [key, value] of Object.entries(this.tristar.tristarData)) {
             const v = value;
-            await this.setStateAsync(key, {
-                val: v.value,
-                ack: true
-            });
+            // console.log("value   : ", v.value)
+            // console.log("valueOld: ", v.valueOld)
+            if (v.value !== v.valueOld) {
+                console.log("key     : ", key);
+                console.log("value   : ", v.value);
+                await this.setStateAsync(key, {
+                    val: v.value,
+                    ack: true
+                });
+            }
         }
     }
     /**

@@ -73,7 +73,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[26]) * tmd.scale.v, 2),
+            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[26]) * tmd.scale.v, 1),
             value: 0,
         };
         this["batt.A"] = {
@@ -124,6 +124,14 @@ class TristarModel {
             readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[39]) * tmd.scale.i, 2),
             value: 0,
         };
+        this["batt.Vtarget"] = {
+            descr: "Voltage to which the battery will be charged at any given time. This value changes with each chargestage and is temperature compensated",
+            role: "value.voltage",
+            unit: "V",
+            type: "number",
+            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[51]) * tmd.scale.v, 2),
+            value: 0,
+        };
         // ------------------------------------------------------------------------------------------
         this["solar.V"] = {
             descr: "Array voltage",
@@ -171,6 +179,22 @@ class TristarModel {
             unit: "h",
             type: "number",
             readFunc: (tmd) => (0, tristarMpptUtil_1.to32bitNumber)(tmd.hr[42], tmd.hr[43]),
+            value: 0,
+        };
+        this["state.kWhTotal"] = {
+            descr: "Reports total solar kilowatt-hours",
+            role: "state",
+            unit: "kWh",
+            type: "number",
+            readFunc: (tmd) => tmd.hr[57],
+            value: 0,
+        };
+        this["state.kWhResetable"] = {
+            descr: "Reports total solar kilowatt-hours since last ah/kWh reset",
+            role: "state",
+            unit: "kWh",
+            type: "number",
+            readFunc: (tmd) => tmd.hr[56],
             value: 0,
         };
         this["state.faults"] = {
@@ -285,12 +309,29 @@ class TristarModel {
             readFunc: (tmd) => tmd.hr[73],
             value: 0,
         };
+        this["control.IbattRefSlave"] = {
+            descr: "Write a current value to this register to override the battery regulation.",
+            role: "state",
+            unit: "I",
+            type: "number",
+            readFunc: (tmd) => tmd.hr[88],
+            value: 0,
+        };
+        this["control.VbattRefSlave"] = {
+            descr: "Write a voltage value to this register to override the battery regulation.",
+            role: "state",
+            unit: "V",
+            type: "number",
+            readFunc: (tmd) => tmd.hr[89],
+            value: 0,
+        };
     }
     update(hr, config) {
         const tmd = new TristarModbusData(hr, config);
         for (const [, value] of Object.entries(this)) {
             const v = value;
             if (typeof v.readFunc === "function") {
+                v.valueOld = v.value;
                 v.value = v.readFunc(tmd);
             }
             // console.log("update - " + key + JSON.stringify(value))

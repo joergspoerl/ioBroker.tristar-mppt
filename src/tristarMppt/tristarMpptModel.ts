@@ -7,7 +7,8 @@ export interface TristarMetaEntry {
 	type: ioBroker.CommonType //'number' | 'string' | 'boolean' | 'array' | 'object' | 'mixed' | 'file'
 	readFunc: (tristarModbusData: TristarModbusData) => TristarPropertyType;
 	writeFunc?: (value: TristarPropertyType) => void;
-	value: TristarPropertyType
+	value: TristarPropertyType;
+	valueOld?: TristarPropertyType;
 }
 
 export type TristarPropertyType = number | string | boolean | null; // entspricht ioBroker.StateValue
@@ -103,7 +104,7 @@ export class TristarModel {
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[26]) * tmd.scale.v, 2),
+		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[26]) * tmd.scale.v, 1),
 		value: 0,
 	};
 
@@ -154,6 +155,14 @@ export class TristarModel {
 		unit:  "I",
 		type: "number",
 		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[39]) * tmd.scale.i, 2),
+		value: 0,
+	};
+	"batt.Vtarget":    TristarMetaEntry = {
+		descr: "Voltage to which the battery will be charged at any given time. This value changes with each chargestage and is temperature compensated",
+		role:  "value.voltage",
+		unit:  "V",
+		type: "number",
+		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[51]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
@@ -211,7 +220,23 @@ export class TristarModel {
 		readFunc:  (tmd: TristarModbusData) => to32bitNumber(tmd.hr[42], tmd.hr[43]),
 		value: 0,
 	};
+	"state.kWhTotal":    TristarMetaEntry = {
+		descr: "Reports total solar kilowatt-hours",
+		role:  "state",
+		unit:  "kWh",
+		type: "number",
+		readFunc:  (tmd: TristarModbusData) => tmd.hr[57],
+		value: 0,
+	};
 
+	"state.kWhResetable":    TristarMetaEntry = {
+		descr: "Reports total solar kilowatt-hours since last ah/kWh reset",
+		role:  "state",
+		unit:  "kWh",
+		type: "number",
+		readFunc:  (tmd: TristarModbusData) => tmd.hr[56],
+		value: 0,
+	};
 
 	"state.faults":    TristarMetaEntry = {
 		descr: "all Controller faults bitfield",
@@ -338,12 +363,30 @@ export class TristarModel {
 		value: 0,
 	};
 
+	"control.IbattRefSlave":    TristarMetaEntry = {
+		descr: "Write a current value to this register to override the battery regulation.",
+		role:  "state",
+		unit:  "I",
+		type: "number",
+		readFunc:  (tmd: TristarModbusData) => tmd.hr[88],
+		value: 0,
+	};
+	"control.VbattRefSlave":    TristarMetaEntry = {
+		descr: "Write a voltage value to this register to override the battery regulation.",
+		role:  "state",
+		unit:  "V",
+		type: "number",
+		readFunc:  (tmd: TristarModbusData) => tmd.hr[89],
+		value: 0,
+	};
+
 	update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig): void {
 		const tmd = new TristarModbusData(hr, config);
 
 		for (const [, value] of Object.entries(this)) {
 			const v = value as TristarMetaEntry;
 			if (typeof v.readFunc === "function" ) {
+				v.valueOld = v.value;
 				v.value = v.readFunc(tmd)
 			}
 			// console.log("update - " + key + JSON.stringify(value))
