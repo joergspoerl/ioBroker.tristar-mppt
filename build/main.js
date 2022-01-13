@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // you need to create an adapter
 const utils = __importStar(require("@iobroker/adapter-core"));
 const tristarMpptTCPModbus_1 = require("./tristarMppt/tristarMpptTCPModbus");
+const tristarMpptUtil_1 = require("./tristarMppt/tristarMpptUtil");
 // Load your modules here, e.g.:
 // import * as fs from "fs";
 class TristarMppt extends utils.Adapter {
@@ -166,6 +167,11 @@ class TristarMppt extends utils.Adapter {
         if (state) {
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+            // id.split(3)[3]
+            const v = this.tristar.tristarData[(0, tristarMpptUtil_1.splitIdFromAdapter)(id)];
+            if (typeof v != "function") {
+                v.value = state.val;
+            }
         }
         else {
             // The state was deleted

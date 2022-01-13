@@ -35,13 +35,15 @@ export class TristarMpptTCPModbus {
 
 			netSocket.on("connect", function () {
 				console.log("connected ...")
-				client.readHoldingRegisters(0, 90).then(function (tristarHoldingRegister:any) {
+				client.readHoldingRegisters(0, 90).then(async function (tristarHoldingRegister:any) {
 
 					// transform in older format
 					// const hr = { register: (tristarHoldingRegister.response as any)._body.valuesAsArray};
 					const hr = (tristarHoldingRegister.response as any)._body.valuesAsArray as TristarHoldingRegisterArray
 
-					self.tristarData.update(hr, config)
+					await self.tristarData.update(hr, config, (a)=>{
+						console.log("writeHoldingRegist Callback: ", a)
+					})
 
 					//console.log("tristarMpptData: ", self.tristarData)
 					netSocket.end();

@@ -6,7 +6,7 @@ export interface TristarMetaEntry {
 	role: ioBrokerRole;
 	type: ioBroker.CommonType //'number' | 'string' | 'boolean' | 'array' | 'object' | 'mixed' | 'file'
 	readFunc: (tristarModbusData: TristarModbusData) => TristarPropertyType;
-	writeFunc?: (value: TristarPropertyType) => void;
+	writeSingleFunc?: (v: number) => TristarWriteSingleHoldingRegister;
 	value: TristarPropertyType;
 	valueOld?: TristarPropertyType;
 }
@@ -14,6 +14,10 @@ export interface TristarMetaEntry {
 export type TristarPropertyType = number | string | boolean | null; // entspricht ioBroker.StateValue
 export type TristarHoldingRegisterArray = Array<number>
 
+export interface TristarWriteSingleHoldingRegister {
+	register: number;
+	value: number
+}
 export type ioBrokerRole = "state" | "value.current" | "value.voltage" | "value" | "value.temperature"
 
 export class TristarModbusData {
@@ -50,7 +54,7 @@ export class TristarScale {
 }
 
 export class TristarModel {
-
+	[key: string]: TristarMetaEntry | ( (hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig, writeCallback: (twshr : TristarWriteSingleHoldingRegister)=> void) => Promise<void> )
 
  	"adc.vb_f_med":    TristarMetaEntry = {
 		descr: "Battery voltage, filtered",
@@ -180,7 +184,7 @@ export class TristarModel {
 	"solar.I":    TristarMetaEntry = {
 		descr: "Array current",
 		role:  "value.current",
-		unit:  "V",
+		unit:  "A",
 		type: "number",
 		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[29]) * tmd.scale.i, 2),
 		value: 0,
@@ -196,11 +200,11 @@ export class TristarModel {
 	};
 
 	"solar.InPowerPercent":    TristarMetaEntry = {
-		descr: "Input power",
+		descr: "Input power percent of watt peak",
 		role:  "value",
 		unit:  "%",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) =>  round(tmd.config.installedWP / 100 * signedToInteger(tmd.hr[59]) * tmd.scale.p, 0),
+		readFunc:  (tmd: TristarModbusData) =>  round( signedToInteger(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
 		value: 0,
 	};
 
@@ -369,6 +373,7 @@ export class TristarModel {
 		unit:  "I",
 		type: "number",
 		readFunc:  (tmd: TristarModbusData) => tmd.hr[88],
+		writeSingleFunc: (value: number) => {return { register : 88, value : Math.floor(value / 80 / Math.pow(2, -15)) }} ,
 		value: 0,
 	};
 	"control.VbattRefSlave":    TristarMetaEntry = {
@@ -380,11 +385,26 @@ export class TristarModel {
 		value: 0,
 	};
 
-	update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig): void {
+	async update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig, writeCallback: (twshr : TristarWriteSingleHoldingRegister)=> void): Promise<void> {
 		const tmd = new TristarModbusData(hr, config);
 
 		for (const [, value] of Object.entries(this)) {
 			const v = value as TristarMetaEntry;
+
+			if (typeof v.writeSingleFunc === "function") {
+				console.log("update found writeSingleFunc function", )
+				let value = 0;
+				if (typeof v.value === "string") {
+					value = parseFloat(v.value)
+				}
+				if (typeof v.value === "number") {
+					value = v.value
+				}
+				const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
+				await writeCallback(twshr);
+
+			}
+
 			if (typeof v.readFunc === "function" ) {
 				v.valueOld = v.value;
 				v.value = v.readFunc(tmd)

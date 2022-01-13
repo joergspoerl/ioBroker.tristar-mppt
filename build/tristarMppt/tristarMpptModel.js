@@ -144,7 +144,7 @@ class TristarModel {
         this["solar.I"] = {
             descr: "Array current",
             role: "value.current",
-            unit: "V",
+            unit: "A",
             type: "number",
             readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[29]) * tmd.scale.i, 2),
             value: 0,
@@ -158,11 +158,11 @@ class TristarModel {
             value: 0,
         };
         this["solar.InPowerPercent"] = {
-            descr: "Input power",
+            descr: "Input power percent of watt peak",
             role: "value",
             unit: "%",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)(tmd.config.installedWP / 100 * (0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p, 0),
+            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
             value: 0,
         };
         this["state.charge"] = {
@@ -315,6 +315,7 @@ class TristarModel {
             unit: "I",
             type: "number",
             readFunc: (tmd) => tmd.hr[88],
+            writeSingleFunc: (value) => { return { register: 88, value: Math.floor(value / 80 / Math.pow(2, -15)) }; },
             value: 0,
         };
         this["control.VbattRefSlave"] = {
@@ -326,10 +327,22 @@ class TristarModel {
             value: 0,
         };
     }
-    update(hr, config) {
+    async update(hr, config, writeCallback) {
         const tmd = new TristarModbusData(hr, config);
         for (const [, value] of Object.entries(this)) {
             const v = value;
+            if (typeof v.writeSingleFunc === "function") {
+                console.log("update found writeSingleFunc function");
+                let value = 0;
+                if (typeof v.value === "string") {
+                    value = parseFloat(v.value);
+                }
+                if (typeof v.value === "number") {
+                    value = v.value;
+                }
+                const twshr = v.writeSingleFunc(value);
+                await writeCallback(twshr);
+            }
             if (typeof v.readFunc === "function") {
                 v.valueOld = v.value;
                 v.value = v.readFunc(tmd);

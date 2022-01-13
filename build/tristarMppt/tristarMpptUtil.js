@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.byteString = exports.ledState = exports.charge_states = exports.resolveAlarmBitfield = exports.alarmTextArray = exports.resolveFaultsBitfield = exports.to32bitNumber = exports.round = exports.signedToInteger = void 0;
+exports.splitIdFromAdapter = exports.byteString = exports.ledState = exports.charge_states = exports.resolveAlarmBitfield = exports.alarmTextArray = exports.resolveFaultsBitfield = exports.to32bitNumber = exports.round = exports.signedToInteger = void 0;
 // helper function to convert signed value to integer
 function signedToInteger(value) {
     if ((value & 0x8000) > 0) {
@@ -126,4 +126,11 @@ function byteString(n) {
     return ("000000000" + n.toString(2)).substr(-8);
 }
 exports.byteString = byteString;
+function splitIdFromAdapter(str) {
+    const delimiter = ".";
+    const start = 2;
+    const tokens = str.split(delimiter).slice(start);
+    return tokens.join(delimiter);
+}
+exports.splitIdFromAdapter = splitIdFromAdapter;
 //# sourceMappingURL=tristarMpptUtil.js.map

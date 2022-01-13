@@ -7,6 +7,7 @@
 import * as utils from "@iobroker/adapter-core";
 import { TristarMetaEntry } from "./tristarMppt/tristarMpptModel";
 import { TristarMpptTCPModbus } from "./tristarMppt/tristarMpptTCPModbus";
+import { splitIdFromAdapter } from "./tristarMppt/tristarMpptUtil";
 
 // Load your modules here, e.g.:
 // import * as fs from "fs";
@@ -171,6 +172,12 @@ class TristarMppt extends utils.Adapter {
 		if (state) {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+
+			// id.split(3)[3]
+			const v = this.tristar.tristarData[splitIdFromAdapter(id)];
+			if (typeof v != "function") {
+				v.value = state.val
+			}
 		} else {
 			// The state was deleted
 			this.log.info(`state ${id} deleted`);

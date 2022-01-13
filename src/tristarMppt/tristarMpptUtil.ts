@@ -126,3 +126,11 @@ export function byteString(n:number): string {
 	}
 	return ("000000000" + n.toString(2)).substr(-8)
 }
+
+export function splitIdFromAdapter(str: string): string  {
+	const delimiter = "."
+	const start = 2
+	const tokens = str.split(delimiter).slice(start)
+	return tokens.join(delimiter);
+}
+
