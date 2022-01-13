@@ -116,7 +116,11 @@ class TristarMppt extends utils.Adapter {
 
 
 	private async updateStates(): Promise<void> {
-		await this.tristar.connectAndRequest(this.config)
+		try {
+			await this.tristar.read(this.config)
+		} catch (Exception) {
+			console.log("ERROR updateStates in  tristar.connectAndCall")
+		}
 
 		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
 			const v = value as TristarMetaEntry;
@@ -125,6 +129,7 @@ class TristarMppt extends utils.Adapter {
 			if (v.value !== v.valueOld) {
 				console.log("key     : ", key)
 				console.log("value   : ", v.value)
+				console.log("valueOld: ", v.valueOld)
 				await this.setStateAsync(key, {
 					val: v.value,
 					ack: true
@@ -168,15 +173,17 @@ class TristarMppt extends utils.Adapter {
 	/**
 	 * Is called if a subscribed state changes
 	 */
-	private onStateChange(id: string, state: ioBroker.State | null | undefined): void {
+	private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
 		if (state) {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-			// id.split(3)[3]
 			const v = this.tristar.tristarData[splitIdFromAdapter(id)];
-			if (typeof v != "function") {
-				v.value = state.val
+			if (typeof v != "function" && v.writeSingleFunc) {
+				v.value = state.val;
+				const twshr = v.writeSingleFunc(v.value);
+				this.tristar.toSendQueue.push(twshr);
+				await this.tristar.write(this.config);
 			}
 		} else {
 			// The state was deleted

@@ -314,7 +314,7 @@ class TristarModel {
             role: "state",
             unit: "I",
             type: "number",
-            readFunc: (tmd) => tmd.hr[88],
+            readFunc: (tmd) => (0, tristarMpptUtil_1.round)(tmd.hr[88] * 80 * Math.pow(2, -15), 2),
             writeSingleFunc: (value) => { return { register: 88, value: Math.floor(value / 80 / Math.pow(2, -15)) }; },
             value: 0,
         };
@@ -324,24 +324,29 @@ class TristarModel {
             unit: "V",
             type: "number",
             readFunc: (tmd) => tmd.hr[89],
+            writeSingleFunc: (value) => { return { register: 89, value: value }; },
             value: 0,
         };
     }
-    async update(hr, config, writeCallback) {
+    async update(hr, config) {
         const tmd = new TristarModbusData(hr, config);
         for (const [, value] of Object.entries(this)) {
             const v = value;
             if (typeof v.writeSingleFunc === "function") {
-                console.log("update found writeSingleFunc function");
-                let value = 0;
-                if (typeof v.value === "string") {
-                    value = parseFloat(v.value);
+                if (v.value != v.valueOld) {
+                    // console.log("update found writeSingleFunc function", )
+                    // let value = 0;
+                    // if (typeof v.value === "string") {
+                    // 	value = parseFloat(v.value)
+                    // }
+                    // if (typeof v.value === "number") {
+                    // 	value = v.value
+                    // }
+                    //const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
+                    //await writeCallback(twshr);
                 }
-                if (typeof v.value === "number") {
-                    value = v.value;
-                }
-                const twshr = v.writeSingleFunc(value);
-                await writeCallback(twshr);
+            }
+            else {
             }
             if (typeof v.readFunc === "function") {
                 v.valueOld = v.value;

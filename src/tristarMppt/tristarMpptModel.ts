@@ -6,7 +6,7 @@ export interface TristarMetaEntry {
 	role: ioBrokerRole;
 	type: ioBroker.CommonType //'number' | 'string' | 'boolean' | 'array' | 'object' | 'mixed' | 'file'
 	readFunc: (tristarModbusData: TristarModbusData) => TristarPropertyType;
-	writeSingleFunc?: (v: number) => TristarWriteSingleHoldingRegister;
+	writeSingleFunc?: (v: TristarPropertyType) => TristarWriteSingleHoldingRegister;
 	value: TristarPropertyType;
 	valueOld?: TristarPropertyType;
 }
@@ -372,8 +372,8 @@ export class TristarModel {
 		role:  "state",
 		unit:  "I",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[88],
-		writeSingleFunc: (value: number) => {return { register : 88, value : Math.floor(value / 80 / Math.pow(2, -15)) }} ,
+		readFunc:  (tmd: TristarModbusData) =>  round(tmd.hr[88] * 80 * Math.pow(2, -15), 2),
+		writeSingleFunc: (value: TristarPropertyType) => {return { register : 88, value : Math.floor(value as number / 80 / Math.pow(2, -15)) }} ,
 		value: 0,
 	};
 	"control.VbattRefSlave":    TristarMetaEntry = {
@@ -382,33 +382,38 @@ export class TristarModel {
 		unit:  "V",
 		type: "number",
 		readFunc:  (tmd: TristarModbusData) => tmd.hr[89],
+		writeSingleFunc: (value: TristarPropertyType) => {return { register : 89, value : value as number  }} ,
 		value: 0,
 	};
 
-	async update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig, writeCallback: (twshr : TristarWriteSingleHoldingRegister)=> void): Promise<void> {
+	async update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig): Promise<void> {
 		const tmd = new TristarModbusData(hr, config);
 
 		for (const [, value] of Object.entries(this)) {
 			const v = value as TristarMetaEntry;
 
 			if (typeof v.writeSingleFunc === "function") {
-				console.log("update found writeSingleFunc function", )
-				let value = 0;
-				if (typeof v.value === "string") {
-					value = parseFloat(v.value)
+				if (v.value != v.valueOld) {
+					// console.log("update found writeSingleFunc function", )
+					// let value = 0;
+					// if (typeof v.value === "string") {
+					// 	value = parseFloat(v.value)
+					// }
+					// if (typeof v.value === "number") {
+					// 	value = v.value
+					// }
+					//const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
+					//await writeCallback(twshr);
 				}
-				if (typeof v.value === "number") {
-					value = v.value
-				}
-				const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
-				await writeCallback(twshr);
 
+			} else {
 			}
 
 			if (typeof v.readFunc === "function" ) {
 				v.valueOld = v.value;
 				v.value = v.readFunc(tmd)
 			}
+
 			// console.log("update - " + key + JSON.stringify(value))
 		}
 	}
