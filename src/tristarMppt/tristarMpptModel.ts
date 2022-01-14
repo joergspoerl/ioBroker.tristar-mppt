@@ -1,12 +1,13 @@
 import { byteString, charge_states, ledState, resolveAlarmBitfield, resolveFaultsBitfield, round, signedToInteger, to32bitNumber } from "./tristarMpptUtil";
 
-export interface TristarMetaEntry {
+export interface TristarDataEntry {
 	descr: string,
 	unit: string;
 	role: ioBrokerRole;
 	type: ioBroker.CommonType //'number' | 'string' | 'boolean' | 'array' | 'object' | 'mixed' | 'file'
-	readFunc: (tristarModbusData: TristarModbusData) => TristarPropertyType;
-	writeSingleFunc?: (v: TristarPropertyType) => TristarWriteSingleHoldingRegister;
+	readRegister?: (tristarModbusData: TristarModbusData) => TristarPropertyType;
+	writeRegister?: (twd: TristarWriteData) => TristarWriteSingleHoldingRegister;
+	writeCoil?: (twd: TristarWriteData) => TristarWriteSingleCoil
 	value: TristarPropertyType;
 	valueOld?: TristarPropertyType;
 }
@@ -14,7 +15,17 @@ export interface TristarMetaEntry {
 export type TristarPropertyType = number | string | boolean | null; // entspricht ioBroker.StateValue
 export type TristarHoldingRegisterArray = Array<number>
 
+export interface TristarWriteData  {
+	value: TristarPropertyType,
+	scale: TristarScale
+
+}
 export interface TristarWriteSingleHoldingRegister {
+	register: number;
+	value: number
+}
+
+export interface TristarWriteSingleCoil {
 	register: number;
 	value: number
 }
@@ -54,367 +65,375 @@ export class TristarScale {
 }
 
 export class TristarModel {
-	[key: string]: TristarMetaEntry | ( (hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig, writeCallback: (twshr : TristarWriteSingleHoldingRegister)=> void) => Promise<void> )
+	[key: string]: TristarDataEntry
 
- 	"adc.vb_f_med":    TristarMetaEntry = {
+ 	"adc.vb_f_med":    TristarDataEntry = {
 		descr: "Battery voltage, filtered",
 		unit:  "V",
 		role:  "value.voltage",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
 	// ------------------------------------------------------------------------------------------
 
-	"temp.HS":    TristarMetaEntry = {
+	"temp.HS":    TristarDataEntry = {
 		descr: "Heatsink temperature C √ -127 to + 127",
 		role:  "value.temperature",
 		unit:  "°C",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[35],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[35],
 		value: 0,
 	};
-	"temp.RTS":    TristarMetaEntry = {
+	"temp.RTS":    TristarDataEntry = {
 		descr: "RTS temperature (0x80 = disconnect)  C √ -127 to + 127",
 		role:  "value.temperature",
 		unit:  "°C",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[36],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[36],
 		value: 0,
 	};
-	"temp.BATT":    TristarMetaEntry = {
+	"temp.BATT":    TristarDataEntry = {
 		descr: "Battery regulation temperature C √ -127 to + 127",
 		role:  "value.temperature",
 		unit:  "°C",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[37],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[37],
 		value: 0,
 	};
 
 	// ------------------------------------------------------------------------------------------
 
-	"batt.V":    TristarMetaEntry = {
+	"batt.V":    TristarDataEntry = {
 		descr: "Battery voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[24]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
-	"batt.SensedV":    TristarMetaEntry = {
+	"batt.SensedV":    TristarDataEntry = {
 		descr: "Battery sensed voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[26]) * tmd.scale.v, 1),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[26]) * tmd.scale.v, 1),
 		value: 0,
 	};
 
-	"batt.A":    TristarMetaEntry = {
+	"batt.A":    TristarDataEntry = {
 		descr: "Battery charge current",
 		role:  "value.current",
 		unit:  "A",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[28]) * tmd.scale.i, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[28]) * tmd.scale.i, 2),
 		value: 0,
 	};
-	"batt.OutPower":    TristarMetaEntry = {
+	"batt.OutPower":    TristarDataEntry = {
 		descr: "Output power",
 		role:  "value",
 		unit:  "W",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[58]) * tmd.scale.p, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[58]) * tmd.scale.p, 2),
 		value: 0,
 	};
-	"batt.Vmin":    TristarMetaEntry = {
+	"batt.Vmin":    TristarDataEntry = {
 		descr: "Minimum battery voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[40]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[40]) * tmd.scale.v, 2),
 		value: 0,
 	};
-	"batt.Vmax":    TristarMetaEntry = {
+	"batt.Vmax":    TristarDataEntry = {
 		descr: "Maximal battery voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[41]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[41]) * tmd.scale.v, 2),
 		value: 0,
 	};
-	"batt.Vf1m":    TristarMetaEntry = {
+	"batt.Vf1m":    TristarDataEntry = {
 		descr: "Battery voltage, filtered(τ ≈ 1min)",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[38]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[38]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
-	"batt.Af1m":    TristarMetaEntry = {
+	"batt.Af1m":    TristarDataEntry = {
 		descr: "Charging current, filtered(τ ≈ 1min)",
 		role:  "value.current",
 		unit:  "I",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[39]) * tmd.scale.i, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[39]) * tmd.scale.i, 2),
 		value: 0,
 	};
-	"batt.Vtarget":    TristarMetaEntry = {
+	"batt.Vtarget":    TristarDataEntry = {
 		descr: "Voltage to which the battery will be charged at any given time. This value changes with each chargestage and is temperature compensated",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[51]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[51]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
 	// ------------------------------------------------------------------------------------------
 
-	"solar.V":    TristarMetaEntry = {
+	"solar.V":    TristarDataEntry = {
 		descr: "Array voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[27]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[27]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
-	"solar.I":    TristarMetaEntry = {
+	"solar.I":    TristarDataEntry = {
 		descr: "Array current",
 		role:  "value.current",
 		unit:  "A",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[29]) * tmd.scale.i, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[29]) * tmd.scale.i, 2),
 		value: 0,
 	};
 
-	"solar.InPower":    TristarMetaEntry = {
+	"solar.InPower":    TristarDataEntry = {
 		descr: "Input power",
 		role:  "value",
 		unit:  "W",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[59]) * tmd.scale.p, 0),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[59]) * tmd.scale.p, 0),
 		value: 0,
 	};
 
-	"solar.InPowerPercent":    TristarMetaEntry = {
+	"solar.InPowerPercent":    TristarDataEntry = {
 		descr: "Input power percent of watt peak",
 		role:  "value",
 		unit:  "%",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) =>  round( signedToInteger(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
+		readRegister:  (tmd: TristarModbusData) =>  round( signedToInteger(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
 		value: 0,
 	};
 
-	"state.charge":    TristarMetaEntry = {
+	"state.charge":    TristarDataEntry = {
 		descr: "charge state",
 		role:  "state",
 		unit:  "",
 		type: "string",
-		readFunc:  (tmd: TristarModbusData) => charge_states[tmd.hr[50]],
+		readRegister:  (tmd: TristarModbusData) => charge_states[tmd.hr[50]],
 		value: 0,
 	};
-	"state.hourmeter":    TristarMetaEntry = {
+	"state.hourmeter":    TristarDataEntry = {
 		descr: "hourmeter",
 		role:  "state",
 		unit:  "h",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => to32bitNumber(tmd.hr[42], tmd.hr[43]),
+		readRegister:  (tmd: TristarModbusData) => to32bitNumber(tmd.hr[42], tmd.hr[43]),
 		value: 0,
 	};
-	"state.kWhTotal":    TristarMetaEntry = {
+	"state.kWhTotal":    TristarDataEntry = {
 		descr: "Reports total solar kilowatt-hours",
 		role:  "state",
 		unit:  "kWh",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[57],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[57],
 		value: 0,
 	};
 
-	"state.kWhResetable":    TristarMetaEntry = {
+	"state.kWhResetable":    TristarDataEntry = {
 		descr: "Reports total solar kilowatt-hours since last ah/kWh reset",
 		role:  "state",
 		unit:  "kWh",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[56],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[56],
 		value: 0,
 	};
 
-	"state.faults":    TristarMetaEntry = {
+	"state.faults":    TristarDataEntry = {
 		descr: "all Controller faults bitfield",
 		role:  "state",
 		unit:  "",
 		type: "array",
-		readFunc:  (tmd: TristarModbusData) => JSON.stringify(resolveFaultsBitfield(tmd.hr[44])),
+		readRegister:  (tmd: TristarModbusData) => JSON.stringify(resolveFaultsBitfield(tmd.hr[44])),
 		value: 0,
 	};
 
 
-	"state.dip":    TristarMetaEntry = {
+	"state.dip":    TristarDataEntry = {
 		descr: "all DIP switch positions bitfield",
 		role:  "state",
 		unit:  "",
 		type: "string",
-		readFunc:  (tmd: TristarModbusData) => byteString(tmd.hr[48]),
+		readRegister:  (tmd: TristarModbusData) => byteString(tmd.hr[48]),
 		value: 0,
 	};
 
-	"state.led":    TristarMetaEntry = {
+	"state.led":    TristarDataEntry = {
 		descr: "State of LED indications",
 		role:  "state",
 		unit:  "",
 		type: "string",
-		readFunc:  (tmd: TristarModbusData) => ledState[tmd.hr[49]] ,
+		readRegister:  (tmd: TristarModbusData) =>tmd.hr[49],
 		value: 0,
 	};
 
-	"state.alarm":    TristarMetaEntry = {
+	"state.ledText":    TristarDataEntry = {
+		descr: "State of LED indications",
+		role:  "state",
+		unit:  "",
+		type: "string",
+		readRegister:  (tmd: TristarModbusData) => ledState[tmd.hr[49]] ,
+		value: 0,
+	};
+
+	"state.alarm":    TristarDataEntry = {
 		descr: "State of LED indications",
 		role:  "state",
 		unit:  "",
 		type: "array",
-		readFunc:  (tmd: TristarModbusData) => JSON.stringify(resolveAlarmBitfield(to32bitNumber(tmd.hr[46],tmd.hr[47]))) ,
+		readRegister:  (tmd: TristarModbusData) => JSON.stringify(resolveAlarmBitfield(to32bitNumber(tmd.hr[46],tmd.hr[47]))) ,
 		value: 0,
 	};
 
 
-	"today.batt.Vmin":    TristarMetaEntry = {
+	"today.batt.Vmin":    TristarDataEntry = {
 		descr: "battery minimal voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[64]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[64]) * tmd.scale.v, 2),
 		value: 0,
 	};
 
-	"today.batt.Vmax":    TristarMetaEntry = {
+	"today.batt.Vmax":    TristarDataEntry = {
 		descr: "battery maximal voltage",
 		role:  "value.voltage",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[65]) * tmd.scale.v, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[65]) * tmd.scale.v, 2),
 		value: 0,
 	};
-	"today.batt.Imax":    TristarMetaEntry = {
+	"today.batt.Imax":    TristarDataEntry = {
 		descr: "battery maximal current",
 		role:  "value.current",
 		unit:  "A",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[65]) * tmd.scale.i, 2),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[65]) * tmd.scale.i, 2),
 		value: 0,
 	};
-	"today.Ahc":    TristarMetaEntry = {
+	"today.Ahc":    TristarDataEntry = {
 		descr: "Amper hours",
 		role:  "state",
 		unit:  "Ah",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[67] * 0.1,
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[67] * 0.1,
 		value: 0,
 	};
 
-	"today.Whc":    TristarMetaEntry = {
+	"today.Whc":    TristarDataEntry = {
 		descr: "watt hours",
 		role:  "state",
 		unit:  "Wh",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[68],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[68],
 		value: 0,
 	};
 
-	"today.flags":    TristarMetaEntry = {
+	"today.flags":    TristarDataEntry = {
 		descr: "flags",
 		role:  "state",
 		unit:  "",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[69],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[69],
 		value: 0,
 	};
 
-	"today.batt.Pmax":    TristarMetaEntry = {
+	"today.batt.Pmax":    TristarDataEntry = {
 		descr: "maximal power output",
 		role:  "value",
 		unit:  "W",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[70]) * tmd.scale.p, 0),
+		readRegister:  (tmd: TristarModbusData) => round(signedToInteger(tmd.hr[70]) * tmd.scale.p, 0),
 		value: 0,
 	};
 
-	"today.batt.Tmin":    TristarMetaEntry = {
+	"today.batt.Tmin":    TristarDataEntry = {
 		descr: "minimal battery temperature",
 		role:  "value.temperature",
 		unit:  "°C",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[71],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[71],
 		value: 0,
 	};
-	"today.batt.Tmax":    TristarMetaEntry = {
+	"today.batt.Tmax":    TristarDataEntry = {
 		descr: "maximal battery temperature",
 		role:  "value.temperature",
 		unit:  "°C",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[72],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[72],
 		value: 0,
 	};
 
-	"today.fault":    TristarMetaEntry = {
+	"today.fault":    TristarDataEntry = {
 		descr: "fault",
 		role:  "state",
 		unit:  "",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[73],
+		readRegister:  (tmd: TristarModbusData) => tmd.hr[73],
 		value: 0,
 	};
 
-	"control.IbattRefSlave":    TristarMetaEntry = {
+	"control.IbattRefSlave":    TristarDataEntry = {
 		descr: "Write a current value to this register to override the battery regulation.",
 		role:  "state",
 		unit:  "I",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) =>  round(tmd.hr[88] * 80 * Math.pow(2, -15), 2),
-		writeSingleFunc: (value: TristarPropertyType) => {return { register : 88, value : Math.floor(value as number / 80 / Math.pow(2, -15)) }} ,
+		readRegister:  (tmd: TristarModbusData) =>  round(tmd.hr[88] * tmd.scale.i * Math.pow(2, -15), 2),
+		writeRegister: (twd: TristarWriteData) => {return { register : 88, value : Math.floor(twd.value as number / twd.scale.i / Math.pow(2, -15)) }} ,
 		value: 0,
 	};
-	"control.VbattRefSlave":    TristarMetaEntry = {
+	"control.VbattRefSlave":    TristarDataEntry = {
 		descr: "Write a voltage value to this register to override the battery regulation.",
 		role:  "state",
 		unit:  "V",
 		type: "number",
-		readFunc:  (tmd: TristarModbusData) => tmd.hr[89],
-		writeSingleFunc: (value: TristarPropertyType) => {return { register : 89, value : value as number  }} ,
+		readRegister:  (tmd: TristarModbusData) => round(tmd.hr[89] * tmd.scale.v * Math.pow(2, -15), 2),
+		writeRegister: (twd: TristarWriteData) => {return { register : 89, value : Math.floor(twd.value as number / twd.scale.v / Math.pow(2, -15))  }} ,
 		value: 0,
 	};
 
-	async update(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig): Promise<void> {
-		const tmd = new TristarModbusData(hr, config);
+	"control.ClearFaults":    TristarDataEntry = {
+		descr: "Clear faults (funktion ?)",
+		role:  "state",
+		unit:  "Coil",
+		type: "boolean",
+		writeCoil: (twd: TristarWriteData) => {return { register : 20, value : twd.value as number  }},
+		value: false,
+		valueOld: false
+	};
 
-		for (const [, value] of Object.entries(this)) {
-			const v = value as TristarMetaEntry;
+	"control.ClearAlarm":    TristarDataEntry = {
+		descr: "Clear alarms (funktion ?)",
+		role:  "state",
+		unit:  "Coil",
+		type: "boolean",
+		writeCoil: (twd: TristarWriteData) => {return { register : 21, value : twd.value as number  }},
+		value: false,
+		valueOld: false
+	};
 
-			if (typeof v.writeSingleFunc === "function") {
-				if (v.value != v.valueOld) {
-					// console.log("update found writeSingleFunc function", )
-					// let value = 0;
-					// if (typeof v.value === "string") {
-					// 	value = parseFloat(v.value)
-					// }
-					// if (typeof v.value === "number") {
-					// 	value = v.value
-					// }
-					//const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
-					//await writeCallback(twshr);
-				}
+	"control.Reset":    TristarDataEntry = {
+		descr: "Reset control (respond and then reset?)",
+		role:  "state",
+		unit:  "Coil",
+		type: "boolean",
+		writeCoil: (twd: TristarWriteData) => {return { register : 255, value : twd.value as number  }},
+		value: false,
+		valueOld: false
+	};
 
-			} else {
-			}
-
-			if (typeof v.readFunc === "function" ) {
-				v.valueOld = v.value;
-				v.value = v.readFunc(tmd)
-			}
-
-			// console.log("update - " + key + JSON.stringify(value))
-		}
-	}
 }

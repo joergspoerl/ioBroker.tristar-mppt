@@ -31,7 +31,7 @@ class TristarModel {
             unit: "V",
             role: "value.voltage",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[24]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[24]) * tmd.scale.v, 2),
             value: 0,
         };
         // ------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ class TristarModel {
             role: "value.temperature",
             unit: "°C",
             type: "number",
-            readFunc: (tmd) => tmd.hr[35],
+            readRegister: (tmd) => tmd.hr[35],
             value: 0,
         };
         this["temp.RTS"] = {
@@ -48,7 +48,7 @@ class TristarModel {
             role: "value.temperature",
             unit: "°C",
             type: "number",
-            readFunc: (tmd) => tmd.hr[36],
+            readRegister: (tmd) => tmd.hr[36],
             value: 0,
         };
         this["temp.BATT"] = {
@@ -56,7 +56,7 @@ class TristarModel {
             role: "value.temperature",
             unit: "°C",
             type: "number",
-            readFunc: (tmd) => tmd.hr[37],
+            readRegister: (tmd) => tmd.hr[37],
             value: 0,
         };
         // ------------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[24]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[24]) * tmd.scale.v, 2),
             value: 0,
         };
         this["batt.SensedV"] = {
@@ -73,7 +73,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[26]) * tmd.scale.v, 1),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[26]) * tmd.scale.v, 1),
             value: 0,
         };
         this["batt.A"] = {
@@ -81,7 +81,7 @@ class TristarModel {
             role: "value.current",
             unit: "A",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[28]) * tmd.scale.i, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[28]) * tmd.scale.i, 2),
             value: 0,
         };
         this["batt.OutPower"] = {
@@ -89,7 +89,7 @@ class TristarModel {
             role: "value",
             unit: "W",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[58]) * tmd.scale.p, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[58]) * tmd.scale.p, 2),
             value: 0,
         };
         this["batt.Vmin"] = {
@@ -97,7 +97,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[40]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[40]) * tmd.scale.v, 2),
             value: 0,
         };
         this["batt.Vmax"] = {
@@ -105,7 +105,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[41]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[41]) * tmd.scale.v, 2),
             value: 0,
         };
         this["batt.Vf1m"] = {
@@ -113,7 +113,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[38]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[38]) * tmd.scale.v, 2),
             value: 0,
         };
         this["batt.Af1m"] = {
@@ -121,7 +121,7 @@ class TristarModel {
             role: "value.current",
             unit: "I",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[39]) * tmd.scale.i, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[39]) * tmd.scale.i, 2),
             value: 0,
         };
         this["batt.Vtarget"] = {
@@ -129,7 +129,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[51]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[51]) * tmd.scale.v, 2),
             value: 0,
         };
         // ------------------------------------------------------------------------------------------
@@ -138,7 +138,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[27]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[27]) * tmd.scale.v, 2),
             value: 0,
         };
         this["solar.I"] = {
@@ -146,7 +146,7 @@ class TristarModel {
             role: "value.current",
             unit: "A",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[29]) * tmd.scale.i, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[29]) * tmd.scale.i, 2),
             value: 0,
         };
         this["solar.InPower"] = {
@@ -154,7 +154,7 @@ class TristarModel {
             role: "value",
             unit: "W",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p, 0),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p, 0),
             value: 0,
         };
         this["solar.InPowerPercent"] = {
@@ -162,7 +162,7 @@ class TristarModel {
             role: "value",
             unit: "%",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[59]) * tmd.scale.p / (tmd.config.installedWP / 100), 1),
             value: 0,
         };
         this["state.charge"] = {
@@ -170,7 +170,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "string",
-            readFunc: (tmd) => tristarMpptUtil_1.charge_states[tmd.hr[50]],
+            readRegister: (tmd) => tristarMpptUtil_1.charge_states[tmd.hr[50]],
             value: 0,
         };
         this["state.hourmeter"] = {
@@ -178,7 +178,7 @@ class TristarModel {
             role: "state",
             unit: "h",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.to32bitNumber)(tmd.hr[42], tmd.hr[43]),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.to32bitNumber)(tmd.hr[42], tmd.hr[43]),
             value: 0,
         };
         this["state.kWhTotal"] = {
@@ -186,7 +186,7 @@ class TristarModel {
             role: "state",
             unit: "kWh",
             type: "number",
-            readFunc: (tmd) => tmd.hr[57],
+            readRegister: (tmd) => tmd.hr[57],
             value: 0,
         };
         this["state.kWhResetable"] = {
@@ -194,7 +194,7 @@ class TristarModel {
             role: "state",
             unit: "kWh",
             type: "number",
-            readFunc: (tmd) => tmd.hr[56],
+            readRegister: (tmd) => tmd.hr[56],
             value: 0,
         };
         this["state.faults"] = {
@@ -202,7 +202,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "array",
-            readFunc: (tmd) => JSON.stringify((0, tristarMpptUtil_1.resolveFaultsBitfield)(tmd.hr[44])),
+            readRegister: (tmd) => JSON.stringify((0, tristarMpptUtil_1.resolveFaultsBitfield)(tmd.hr[44])),
             value: 0,
         };
         this["state.dip"] = {
@@ -210,7 +210,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "string",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.byteString)(tmd.hr[48]),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.byteString)(tmd.hr[48]),
             value: 0,
         };
         this["state.led"] = {
@@ -218,7 +218,15 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "string",
-            readFunc: (tmd) => tristarMpptUtil_1.ledState[tmd.hr[49]],
+            readRegister: (tmd) => tmd.hr[49],
+            value: 0,
+        };
+        this["state.ledText"] = {
+            descr: "State of LED indications",
+            role: "state",
+            unit: "",
+            type: "string",
+            readRegister: (tmd) => tristarMpptUtil_1.ledState[tmd.hr[49]],
             value: 0,
         };
         this["state.alarm"] = {
@@ -226,7 +234,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "array",
-            readFunc: (tmd) => JSON.stringify((0, tristarMpptUtil_1.resolveAlarmBitfield)((0, tristarMpptUtil_1.to32bitNumber)(tmd.hr[46], tmd.hr[47]))),
+            readRegister: (tmd) => JSON.stringify((0, tristarMpptUtil_1.resolveAlarmBitfield)((0, tristarMpptUtil_1.to32bitNumber)(tmd.hr[46], tmd.hr[47]))),
             value: 0,
         };
         this["today.batt.Vmin"] = {
@@ -234,7 +242,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[64]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[64]) * tmd.scale.v, 2),
             value: 0,
         };
         this["today.batt.Vmax"] = {
@@ -242,7 +250,7 @@ class TristarModel {
             role: "value.voltage",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[65]) * tmd.scale.v, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[65]) * tmd.scale.v, 2),
             value: 0,
         };
         this["today.batt.Imax"] = {
@@ -250,7 +258,7 @@ class TristarModel {
             role: "value.current",
             unit: "A",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[65]) * tmd.scale.i, 2),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[65]) * tmd.scale.i, 2),
             value: 0,
         };
         this["today.Ahc"] = {
@@ -258,7 +266,7 @@ class TristarModel {
             role: "state",
             unit: "Ah",
             type: "number",
-            readFunc: (tmd) => tmd.hr[67] * 0.1,
+            readRegister: (tmd) => tmd.hr[67] * 0.1,
             value: 0,
         };
         this["today.Whc"] = {
@@ -266,7 +274,7 @@ class TristarModel {
             role: "state",
             unit: "Wh",
             type: "number",
-            readFunc: (tmd) => tmd.hr[68],
+            readRegister: (tmd) => tmd.hr[68],
             value: 0,
         };
         this["today.flags"] = {
@@ -274,7 +282,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "number",
-            readFunc: (tmd) => tmd.hr[69],
+            readRegister: (tmd) => tmd.hr[69],
             value: 0,
         };
         this["today.batt.Pmax"] = {
@@ -282,7 +290,7 @@ class TristarModel {
             role: "value",
             unit: "W",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[70]) * tmd.scale.p, 0),
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)((0, tristarMpptUtil_1.signedToInteger)(tmd.hr[70]) * tmd.scale.p, 0),
             value: 0,
         };
         this["today.batt.Tmin"] = {
@@ -290,7 +298,7 @@ class TristarModel {
             role: "value.temperature",
             unit: "°C",
             type: "number",
-            readFunc: (tmd) => tmd.hr[71],
+            readRegister: (tmd) => tmd.hr[71],
             value: 0,
         };
         this["today.batt.Tmax"] = {
@@ -298,7 +306,7 @@ class TristarModel {
             role: "value.temperature",
             unit: "°C",
             type: "number",
-            readFunc: (tmd) => tmd.hr[72],
+            readRegister: (tmd) => tmd.hr[72],
             value: 0,
         };
         this["today.fault"] = {
@@ -306,7 +314,7 @@ class TristarModel {
             role: "state",
             unit: "",
             type: "number",
-            readFunc: (tmd) => tmd.hr[73],
+            readRegister: (tmd) => tmd.hr[73],
             value: 0,
         };
         this["control.IbattRefSlave"] = {
@@ -314,8 +322,8 @@ class TristarModel {
             role: "state",
             unit: "I",
             type: "number",
-            readFunc: (tmd) => (0, tristarMpptUtil_1.round)(tmd.hr[88] * 80 * Math.pow(2, -15), 2),
-            writeSingleFunc: (value) => { return { register: 88, value: Math.floor(value / 80 / Math.pow(2, -15)) }; },
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)(tmd.hr[88] * tmd.scale.i * Math.pow(2, -15), 2),
+            writeRegister: (twd) => { return { register: 88, value: Math.floor(twd.value / twd.scale.i / Math.pow(2, -15)) }; },
             value: 0,
         };
         this["control.VbattRefSlave"] = {
@@ -323,37 +331,37 @@ class TristarModel {
             role: "state",
             unit: "V",
             type: "number",
-            readFunc: (tmd) => tmd.hr[89],
-            writeSingleFunc: (value) => { return { register: 89, value: value }; },
+            readRegister: (tmd) => (0, tristarMpptUtil_1.round)(tmd.hr[89] * tmd.scale.v * Math.pow(2, -15), 2),
+            writeRegister: (twd) => { return { register: 89, value: Math.floor(twd.value / twd.scale.v / Math.pow(2, -15)) }; },
             value: 0,
         };
-    }
-    async update(hr, config) {
-        const tmd = new TristarModbusData(hr, config);
-        for (const [, value] of Object.entries(this)) {
-            const v = value;
-            if (typeof v.writeSingleFunc === "function") {
-                if (v.value != v.valueOld) {
-                    // console.log("update found writeSingleFunc function", )
-                    // let value = 0;
-                    // if (typeof v.value === "string") {
-                    // 	value = parseFloat(v.value)
-                    // }
-                    // if (typeof v.value === "number") {
-                    // 	value = v.value
-                    // }
-                    //const twshr : TristarWriteSingleHoldingRegister = v.writeSingleFunc(value)
-                    //await writeCallback(twshr);
-                }
-            }
-            else {
-            }
-            if (typeof v.readFunc === "function") {
-                v.valueOld = v.value;
-                v.value = v.readFunc(tmd);
-            }
-            // console.log("update - " + key + JSON.stringify(value))
-        }
+        this["control.ClearFaults"] = {
+            descr: "Clear faults (funktion ?)",
+            role: "state",
+            unit: "Coil",
+            type: "boolean",
+            writeCoil: (twd) => { return { register: 20, value: twd.value }; },
+            value: false,
+            valueOld: false
+        };
+        this["control.ClearAlarm"] = {
+            descr: "Clear alarms (funktion ?)",
+            role: "state",
+            unit: "Coil",
+            type: "boolean",
+            writeCoil: (twd) => { return { register: 21, value: twd.value }; },
+            value: false,
+            valueOld: false
+        };
+        this["control.Reset"] = {
+            descr: "Reset control (respond and then reset?)",
+            role: "state",
+            unit: "Coil",
+            type: "boolean",
+            writeCoil: (twd) => { return { register: 255, value: twd.value }; },
+            value: false,
+            valueOld: false
+        };
     }
 }
 exports.TristarModel = TristarModel;

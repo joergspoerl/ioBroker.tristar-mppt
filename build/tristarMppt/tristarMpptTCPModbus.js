@@ -10,28 +10,49 @@ const net = require("net");
 class TristarMpptTCPModbus {
     constructor() {
         this.tristarData = new tristarMpptModel_1.TristarModel();
-        this.toSendQueue = [];
+        this.sendHoldingRegisterQueue = [];
+        this.sendCoilQueue = [];
     }
-    async write(adapterConfig) {
-        console.log("TristarMpptTCPModbus write", JSON.stringify(this.toSendQueue));
+    async updateTristarData(hr, config) {
+        const tmd = new tristarMpptModel_1.TristarModbusData(hr, config);
+        this.tristarScale = tmd.scale;
+        for (const [, value] of Object.entries(this.tristarData)) {
+            const v = value;
+            if (typeof v.readRegister === "function") {
+                v.valueOld = v.value;
+                v.value = v.readRegister(tmd);
+            }
+            // console.log("update - " + key + JSON.stringify(value))
+        }
+    }
+    async writeHoldingRegister(adapterConfig) {
+        console.log("TristarMpptTCPModbus writeHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue));
         this.connect(adapterConfig, async (client) => {
-            while (this.toSendQueue.length > 0) {
-                const item = this.toSendQueue.pop();
+            while (this.sendHoldingRegisterQueue.length > 0) {
+                const item = this.sendHoldingRegisterQueue.pop();
                 const response = await client.writeSingleRegister(item === null || item === void 0 ? void 0 : item.register, item === null || item === void 0 ? void 0 : item.value);
                 console.log("response writeSingleRegister", JSON.stringify(response));
             }
-            // const tristarHoldingRegister = await client.readHoldingRegisters(88, 89)
-            // console.log("read back:", tristarHoldingRegister)
         });
     }
-    async read(adapterConfig) {
-        console.log("TristarMpptTCPModbus read", JSON.stringify(this.toSendQueue));
+    async readHoldingRegister(adapterConfig) {
+        console.log("TristarMpptTCPModbus readHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue));
         this.connect(adapterConfig, async (client) => {
             const tristarHoldingRegister = await client.readHoldingRegisters(0, 90);
             // transform in older format
             // const hr = { register: (tristarHoldingRegister.response as any)._body.valuesAsArray};
             const hr = tristarHoldingRegister.response._body.valuesAsArray;
-            await this.tristarData.update(hr, adapterConfig);
+            await this.updateTristarData(hr, adapterConfig);
+        });
+    }
+    async writeCoil(adapterConfig) {
+        console.log("TristarMpptTCPModbus writeCoil", JSON.stringify(this.sendCoilQueue));
+        this.connect(adapterConfig, async (client) => {
+            while (this.sendCoilQueue.length > 0) {
+                const item = this.sendCoilQueue.pop();
+                const response = await client.writeSingleCoil(item === null || item === void 0 ? void 0 : item.register, (item === null || item === void 0 ? void 0 : item.value) == 1 ? true : false);
+                console.log("response writeCoil", JSON.stringify(response));
+            }
         });
     }
     async connect(adapterConfig, callback) {

@@ -5,7 +5,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 import * as utils from "@iobroker/adapter-core";
-import { TristarMetaEntry } from "./tristarMppt/tristarMpptModel";
+import { TristarDataEntry, TristarWriteData } from "./tristarMppt/tristarMpptModel";
 import { TristarMpptTCPModbus } from "./tristarMppt/tristarMpptTCPModbus";
 import { splitIdFromAdapter } from "./tristarMppt/tristarMpptUtil";
 
@@ -97,7 +97,7 @@ class TristarMppt extends utils.Adapter {
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	private async initObjects(): Promise<void> {
 		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
-			const v = value as TristarMetaEntry
+			const v = value as TristarDataEntry
 			await this.setObjectNotExistsAsync(key, {
 				type: "state",
 				common: {
@@ -117,13 +117,13 @@ class TristarMppt extends utils.Adapter {
 
 	private async updateStates(): Promise<void> {
 		try {
-			await this.tristar.read(this.config)
+			await this.tristar.readHoldingRegister(this.config)
 		} catch (Exception) {
 			console.log("ERROR updateStates in  tristar.connectAndCall")
 		}
 
 		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
-			const v = value as TristarMetaEntry;
+			const v = value as TristarDataEntry;
 			// console.log("value   : ", v.value)
 			// console.log("valueOld: ", v.valueOld)
 			if (v.value !== v.valueOld) {
@@ -178,12 +178,27 @@ class TristarMppt extends utils.Adapter {
 			// The state was changed
 			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-			const v = this.tristar.tristarData[splitIdFromAdapter(id)];
-			if (typeof v != "function" && v.writeSingleFunc) {
-				v.value = state.val;
-				const twshr = v.writeSingleFunc(v.value);
-				this.tristar.toSendQueue.push(twshr);
-				await this.tristar.write(this.config);
+			if (this.tristar.tristarScale) {
+				const twd : TristarWriteData = {
+					value: 0,
+					scale: this.tristar.tristarScale
+				}
+				const v = this.tristar.tristarData[splitIdFromAdapter(id)];
+				console.log("onStateChange", JSON.stringify(v) , v.writeCoil)
+				if (v.writeRegister) {
+					twd.value = state.val;
+					const twshr = v.writeRegister(twd);
+					this.tristar.sendHoldingRegisterQueue.push(twshr);
+					await this.tristar.writeHoldingRegister(this.config);
+				}
+				if (v.writeCoil) {
+					twd.value = state.val;
+					const twc = v.writeCoil(twd);
+					this.tristar.sendCoilQueue.push(twc)
+					await this.tristar.writeCoil(this.config)
+				} else {
+					console.log("NO Tristar scale !!! ")
+				}
 			}
 		} else {
 			// The state was deleted

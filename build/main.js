@@ -116,7 +116,7 @@ class TristarMppt extends utils.Adapter {
     }
     async updateStates() {
         try {
-            await this.tristar.read(this.config);
+            await this.tristar.readHoldingRegister(this.config);
         }
         catch (Exception) {
             console.log("ERROR updateStates in  tristar.connectAndCall");
@@ -173,12 +173,28 @@ class TristarMppt extends utils.Adapter {
         if (state) {
             // The state was changed
             this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-            const v = this.tristar.tristarData[(0, tristarMpptUtil_1.splitIdFromAdapter)(id)];
-            if (typeof v != "function" && v.writeSingleFunc) {
-                v.value = state.val;
-                const twshr = v.writeSingleFunc(v.value);
-                this.tristar.toSendQueue.push(twshr);
-                await this.tristar.write(this.config);
+            if (this.tristar.tristarScale) {
+                const twd = {
+                    value: 0,
+                    scale: this.tristar.tristarScale
+                };
+                const v = this.tristar.tristarData[(0, tristarMpptUtil_1.splitIdFromAdapter)(id)];
+                console.log("onStateChange", JSON.stringify(v), v.writeCoil);
+                if (v.writeRegister) {
+                    twd.value = state.val;
+                    const twshr = v.writeRegister(twd);
+                    this.tristar.sendHoldingRegisterQueue.push(twshr);
+                    await this.tristar.writeHoldingRegister(this.config);
+                }
+                if (v.writeCoil) {
+                    twd.value = state.val;
+                    const twc = v.writeCoil(twd);
+                    this.tristar.sendCoilQueue.push(twc);
+                    await this.tristar.writeCoil(this.config);
+                }
+                else {
+                    console.log("NO Tristar scale !!! ");
+                }
             }
         }
         else {
