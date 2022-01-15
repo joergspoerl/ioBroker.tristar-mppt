@@ -116,23 +116,24 @@ class TristarMppt extends utils.Adapter {
 
 	private async updateStates(): Promise<void> {
 		try {
+			// this.log.debug("#########" + JSON.stringify(this.tristar));
 			await this.tristar.readHoldingRegister(this.config)
+			for (const [key, value] of Object.entries(this.tristar.tristarData)) {
+				const v = value as TristarDataEntry;
+				if (v.value !== v.valueOld) {
+					this.log.debug("key     : " + key)
+					this.log.debug("value   : " + v.value)
+					this.log.debug("valueOld: " + v.valueOld)
+					await this.setStateAsync(key, {
+						val: v.value,
+						ack: true
+					});
+				}
+			}
 		} catch (Exception) {
-			this.log.error("ERROR updateStates in  tristar.connectAndCall: " + JSON.stringify(Exception))
+			this.log.error("ERROR updateStates in  tristar.readHoldingRegister: " + JSON.stringify(Exception))
 		}
 
-		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
-			const v = value as TristarDataEntry;
-			if (v.value !== v.valueOld) {
-				this.log.debug("key     : " + key)
-				this.log.debug("value   : " + v.value)
-				this.log.debug("valueOld: " + v.valueOld)
-				await this.setStateAsync(key, {
-					val: v.value,
-					ack: true
-				});
-			}
-		}
 	}
 
 	/**

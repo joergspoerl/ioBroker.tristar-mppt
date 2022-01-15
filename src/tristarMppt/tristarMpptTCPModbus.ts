@@ -13,6 +13,7 @@ export class TristarMpptTCPModbus {
 	sendHoldingRegisterQueue: Array<TristarWriteSingleHoldingRegister> = []
 	sendCoilQueue: Array<TristarWriteSingleCoil> = []
 
+
 	async updateTristarData(hr: TristarHoldingRegisterArray, config: ioBroker.AdapterConfig): Promise<void> {
 		const tmd = new TristarModbusData(hr, config);
 		this.tristarScale = tmd.scale
@@ -30,24 +31,24 @@ export class TristarMpptTCPModbus {
 	}
 
 	async writeHoldingRegister(adapterConfig: ioBroker.AdapterConfig): Promise<void> {
-		console.log("TristarMpptTCPModbus writeHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue))
+		// console.log("TristarMpptTCPModbus writeHoldingRegister " + JSON.stringify(this.sendHoldingRegisterQueue))
 
 		await this.connect(adapterConfig, async (client) => {
 			while (this.sendHoldingRegisterQueue.length > 0) {
 				const item = this.sendHoldingRegisterQueue.pop()
 				const response = await client.writeSingleRegister(item?.register, item?.value)
-				console.log("response writeSingleRegister", JSON.stringify(response))
+				console.log("response writeSingleRegister " + JSON.stringify(response))
 			}
 		})
 	}
 
 	async readHoldingRegister(adapterConfig: ioBroker.AdapterConfig): Promise<void> {
-		console.log("TristarMpptTCPModbus readHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue))
+		// console.log("TristarMpptTCPModbus readHoldingRegister ***************")
 
 		await this.connect(adapterConfig, async (client) => {
 
 			const tristarHoldingRegister = await client.readHoldingRegisters(0, 90)
-
+			// console.log("tristarHoldingRegister" + JSON.stringify(tristarHoldingRegister))
 			// transform in older format
 			// const hr = { register: (tristarHoldingRegister.response as any)._body.valuesAsArray};
 			const hr = (tristarHoldingRegister.response as any)._body.valuesAsArray as TristarHoldingRegisterArray
@@ -57,13 +58,13 @@ export class TristarMpptTCPModbus {
 	}
 
 	async writeCoil(adapterConfig: ioBroker.AdapterConfig): Promise<void> {
-		console.log("TristarMpptTCPModbus writeCoil", JSON.stringify(this.sendCoilQueue))
+		// console.log("TristarMpptTCPModbus writeCoil " + JSON.stringify(this.sendCoilQueue))
 
 		await this.connect(adapterConfig, async (client) => {
 			while (this.sendCoilQueue.length > 0) {
 				const item = this.sendCoilQueue.pop()
 				const response = await client.writeSingleCoil(item?.register, item?.value == 1 ? true : false)
-				console.log("response writeCoil", JSON.stringify(response))
+				console.log("response writeCoil " + JSON.stringify(response))
 			}
 		})
 	}
@@ -71,8 +72,8 @@ export class TristarMpptTCPModbus {
 	async connect(adapterConfig: ioBroker.AdapterConfig, callback: (client: any) => Promise<void>): Promise<any> {
 		const config = adapterConfig
 		return new Promise<any>((resolve, reject) => {
-			console.log("connect to host: ", config.hostname)
-			console.log("connect to unitId: ", config.unitId)
+			console.log("connect to host: " + config.hostname)
+			console.log("connect to unitId: " + config.unitId)
 
 			// eslint-disable-next-line @typescript-eslint/no-this-alias
 			const self = this;
@@ -96,17 +97,13 @@ export class TristarMpptTCPModbus {
 
 					// call modbus command
 					try {
-						console.log("before call ")
 						await callback(client)
-						console.log("after call ")
 						netSocket.end();
-						console.log("netSocket end ")
 						resolve(self.tristarData);
-						console.log("after resolve ")
 					}
 
 					catch (Exception) {
-						console.log("ERROR in callback", Exception)
+						console.log("ERROR in callback" + JSON.stringify(Exception))
 						netSocket.end();
 						reject(Exception);
 					}
@@ -116,13 +113,13 @@ export class TristarMpptTCPModbus {
 
 
 				netSocket.on("error", function (err: any) {
-					console.log(err);
+					console.log("netSocket ERROR" + JSON.stringify(err))
 					reject(err);
 
 				})
 
 			} catch (Exception) {
-				console.log(Exception);
+				console.log("ERROR in connect" + JSON.stringify(Exception))
 				reject(Exception);
 			}
 

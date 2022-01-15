@@ -26,19 +26,20 @@ class TristarMpptTCPModbus {
         }
     }
     async writeHoldingRegister(adapterConfig) {
-        console.log("TristarMpptTCPModbus writeHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue));
+        // console.log("TristarMpptTCPModbus writeHoldingRegister " + JSON.stringify(this.sendHoldingRegisterQueue))
         await this.connect(adapterConfig, async (client) => {
             while (this.sendHoldingRegisterQueue.length > 0) {
                 const item = this.sendHoldingRegisterQueue.pop();
                 const response = await client.writeSingleRegister(item === null || item === void 0 ? void 0 : item.register, item === null || item === void 0 ? void 0 : item.value);
-                console.log("response writeSingleRegister", JSON.stringify(response));
+                console.log("response writeSingleRegister " + JSON.stringify(response));
             }
         });
     }
     async readHoldingRegister(adapterConfig) {
-        console.log("TristarMpptTCPModbus readHoldingRegister", JSON.stringify(this.sendHoldingRegisterQueue));
+        // console.log("TristarMpptTCPModbus readHoldingRegister ***************")
         await this.connect(adapterConfig, async (client) => {
             const tristarHoldingRegister = await client.readHoldingRegisters(0, 90);
+            // console.log("tristarHoldingRegister" + JSON.stringify(tristarHoldingRegister))
             // transform in older format
             // const hr = { register: (tristarHoldingRegister.response as any)._body.valuesAsArray};
             const hr = tristarHoldingRegister.response._body.valuesAsArray;
@@ -46,20 +47,20 @@ class TristarMpptTCPModbus {
         });
     }
     async writeCoil(adapterConfig) {
-        console.log("TristarMpptTCPModbus writeCoil", JSON.stringify(this.sendCoilQueue));
+        // console.log("TristarMpptTCPModbus writeCoil " + JSON.stringify(this.sendCoilQueue))
         await this.connect(adapterConfig, async (client) => {
             while (this.sendCoilQueue.length > 0) {
                 const item = this.sendCoilQueue.pop();
                 const response = await client.writeSingleCoil(item === null || item === void 0 ? void 0 : item.register, (item === null || item === void 0 ? void 0 : item.value) == 1 ? true : false);
-                console.log("response writeCoil", JSON.stringify(response));
+                console.log("response writeCoil " + JSON.stringify(response));
             }
         });
     }
     async connect(adapterConfig, callback) {
         const config = adapterConfig;
         return new Promise((resolve, reject) => {
-            console.log("connect to host: ", config.hostname);
-            console.log("connect to unitId: ", config.unitId);
+            console.log("connect to host: " + config.hostname);
+            console.log("connect to unitId: " + config.unitId);
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             const self = this;
             try {
@@ -78,27 +79,23 @@ class TristarMpptTCPModbus {
                     console.log("connected ...");
                     // call modbus command
                     try {
-                        console.log("before call ");
                         await callback(client);
-                        console.log("after call ");
                         netSocket.end();
-                        console.log("netSocket end ");
                         resolve(self.tristarData);
-                        console.log("after resolve ");
                     }
                     catch (Exception) {
-                        console.log("ERROR in callback", Exception);
+                        console.log("ERROR in callback" + JSON.stringify(Exception));
                         netSocket.end();
                         reject(Exception);
                     }
                 });
                 netSocket.on("error", function (err) {
-                    console.log(err);
+                    console.log("netSocket ERROR" + JSON.stringify(err));
                     reject(err);
                 });
             }
             catch (Exception) {
-                console.log(Exception);
+                console.log("ERROR in connect" + JSON.stringify(Exception));
                 reject(Exception);
             }
         });

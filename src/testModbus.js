@@ -1,3 +1,4 @@
+
 // create an empty modbus client
 var ModbusRTU = require("modbus-serial");
 var client = new ModbusRTU();
@@ -52,7 +53,7 @@ client.setID(1);
             // const w1 = await client.writeCoil(255, true)
             // console.log(w1)
 
-            
+
             // const w1 = await client.writeCoil(20, true)
             // console.log(w1)
             // const w2 = await client.writeCoil(21, true)
