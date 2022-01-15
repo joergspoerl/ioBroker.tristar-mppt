@@ -16,6 +16,7 @@ class TristarMppt extends utils.Adapter {
 
 	timeoutRef : ioBroker.Timeout | undefined;
 	tristar = new TristarMpptTCPModbus()
+	mainLoopRunning = true
 
 	public constructor(options: Partial<utils.AdapterOptions> = {}) {
 		super({
@@ -59,11 +60,9 @@ class TristarMppt extends utils.Adapter {
 		});
 
 
-		// main loop
-		this.setInterval( async () => {
-			this.updateStates();
-			//console.log("tick")
-		}, this.config.interval * 1000)
+		// start main loop
+
+		this.mainLoop();
 
 		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
 		this.subscribeStates("control.*");
@@ -119,17 +118,15 @@ class TristarMppt extends utils.Adapter {
 		try {
 			await this.tristar.readHoldingRegister(this.config)
 		} catch (Exception) {
-			console.log("ERROR updateStates in  tristar.connectAndCall")
+			this.log.error("ERROR updateStates in  tristar.connectAndCall: " + JSON.stringify(Exception))
 		}
 
 		for (const [key, value] of Object.entries(this.tristar.tristarData)) {
 			const v = value as TristarDataEntry;
-			// console.log("value   : ", v.value)
-			// console.log("valueOld: ", v.valueOld)
 			if (v.value !== v.valueOld) {
-				console.log("key     : ", key)
-				console.log("value   : ", v.value)
-				console.log("valueOld: ", v.valueOld)
+				this.log.debug("key     : " + key)
+				this.log.debug("value   : " + v.value)
+				this.log.debug("valueOld: " + v.valueOld)
 				await this.setStateAsync(key, {
 					val: v.value,
 					ack: true
@@ -148,6 +145,7 @@ class TristarMppt extends utils.Adapter {
 			// clearTimeout(timeout2);
 			// ...
 			// clearInterval(interval1);
+			this.mainLoopRunning = false;
 
 			callback();
 		} catch (e) {
@@ -169,40 +167,54 @@ class TristarMppt extends utils.Adapter {
 	// 		this.log.info(`object ${id} deleted`);
 	// 	}
 	// }
+	private async mainLoop(): Promise<void> {
+		while(this.mainLoopRunning) {
+			await this.updateStates();
+			await this.sleep(this.config.interval * 1000)
+		}
+	}
 
+	private async sleep(ms:number): Promise<void> {
+		return new Promise(resolve => setTimeout(resolve, ms));
+	}
 	/**
 	 * Is called if a subscribed state changes
 	 */
 	private async onStateChange(id: string, state: ioBroker.State | null | undefined): Promise<void> {
-		if (state) {
-			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+		try {
+			if (state) {
+				// The state was changed
+				this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
 
-			if (this.tristar.tristarScale) {
-				const twd : TristarWriteData = {
-					value: 0,
-					scale: this.tristar.tristarScale
+				if (this.tristar.tristarScale) {
+					const twd : TristarWriteData = {
+						value: 0,
+						scale: this.tristar.tristarScale
+					}
+					const v = this.tristar.tristarData[splitIdFromAdapter(id)];
+					this.log.debug("onStateChange" + JSON.stringify(v)+ JSON.stringify(v.writeCoil))
+					if (v.writeRegister) {
+						twd.value = state.val;
+						const twshr = v.writeRegister(twd);
+						this.tristar.sendHoldingRegisterQueue.push(twshr);
+						await this.tristar.writeHoldingRegister(this.config);
+					} else {
+						if (v.writeCoil) {
+							twd.value = state.val;
+							const twc = v.writeCoil(twd);
+							this.tristar.sendCoilQueue.push(twc)
+							await this.tristar.writeCoil(this.config)
+						} else {
+							this.log.error("Model has nor function writeCoil or write Register !!! ")
+						}
+					}
 				}
-				const v = this.tristar.tristarData[splitIdFromAdapter(id)];
-				console.log("onStateChange", JSON.stringify(v) , v.writeCoil)
-				if (v.writeRegister) {
-					twd.value = state.val;
-					const twshr = v.writeRegister(twd);
-					this.tristar.sendHoldingRegisterQueue.push(twshr);
-					await this.tristar.writeHoldingRegister(this.config);
-				}
-				if (v.writeCoil) {
-					twd.value = state.val;
-					const twc = v.writeCoil(twd);
-					this.tristar.sendCoilQueue.push(twc)
-					await this.tristar.writeCoil(this.config)
-				} else {
-					console.log("NO Tristar scale !!! ")
-				}
+			} else {
+				// The state was deleted
+				this.log.info(`state ${id} deleted`);
 			}
-		} else {
-			// The state was deleted
-			this.log.info(`state ${id} deleted`);
+		} catch (Exception) {
+			this.log.error("onStateChange" + JSON.stringify(Exception))
 		}
 	}
 

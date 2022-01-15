@@ -36,6 +36,7 @@ class TristarMppt extends utils.Adapter {
             name: "tristar-mppt",
         });
         this.tristar = new tristarMpptTCPModbus_1.TristarMpptTCPModbus();
+        this.mainLoopRunning = true;
         this.on("ready", this.onReady.bind(this));
         this.on("stateChange", this.onStateChange.bind(this));
         // this.on("objectChange", this.onObjectChange.bind(this));
@@ -68,11 +69,8 @@ class TristarMppt extends utils.Adapter {
             },
             native: {},
         });
-        // main loop
-        this.setInterval(async () => {
-            this.updateStates();
-            //console.log("tick")
-        }, this.config.interval * 1000);
+        // start main loop
+        this.mainLoop();
         // In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
         this.subscribeStates("control.*");
         // You can also add a subscription for multiple states. The following line watches all states starting with "lights."
@@ -119,16 +117,14 @@ class TristarMppt extends utils.Adapter {
             await this.tristar.readHoldingRegister(this.config);
         }
         catch (Exception) {
-            console.log("ERROR updateStates in  tristar.connectAndCall");
+            this.log.error("ERROR updateStates in  tristar.connectAndCall: " + JSON.stringify(Exception));
         }
         for (const [key, value] of Object.entries(this.tristar.tristarData)) {
             const v = value;
-            // console.log("value   : ", v.value)
-            // console.log("valueOld: ", v.valueOld)
             if (v.value !== v.valueOld) {
-                console.log("key     : ", key);
-                console.log("value   : ", v.value);
-                console.log("valueOld: ", v.valueOld);
+                this.log.debug("key     : " + key);
+                this.log.debug("value   : " + v.value);
+                this.log.debug("valueOld: " + v.valueOld);
                 await this.setStateAsync(key, {
                     val: v.value,
                     ack: true
@@ -146,6 +142,7 @@ class TristarMppt extends utils.Adapter {
             // clearTimeout(timeout2);
             // ...
             // clearInterval(interval1);
+            this.mainLoopRunning = false;
             callback();
         }
         catch (e) {
@@ -166,40 +163,56 @@ class TristarMppt extends utils.Adapter {
     // 		this.log.info(`object ${id} deleted`);
     // 	}
     // }
+    async mainLoop() {
+        while (this.mainLoopRunning) {
+            await this.updateStates();
+            await this.sleep(this.config.interval * 1000);
+        }
+    }
+    async sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
     /**
      * Is called if a subscribed state changes
      */
     async onStateChange(id, state) {
-        if (state) {
-            // The state was changed
-            this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-            if (this.tristar.tristarScale) {
-                const twd = {
-                    value: 0,
-                    scale: this.tristar.tristarScale
-                };
-                const v = this.tristar.tristarData[(0, tristarMpptUtil_1.splitIdFromAdapter)(id)];
-                console.log("onStateChange", JSON.stringify(v), v.writeCoil);
-                if (v.writeRegister) {
-                    twd.value = state.val;
-                    const twshr = v.writeRegister(twd);
-                    this.tristar.sendHoldingRegisterQueue.push(twshr);
-                    await this.tristar.writeHoldingRegister(this.config);
-                }
-                if (v.writeCoil) {
-                    twd.value = state.val;
-                    const twc = v.writeCoil(twd);
-                    this.tristar.sendCoilQueue.push(twc);
-                    await this.tristar.writeCoil(this.config);
-                }
-                else {
-                    console.log("NO Tristar scale !!! ");
+        try {
+            if (state) {
+                // The state was changed
+                this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+                if (this.tristar.tristarScale) {
+                    const twd = {
+                        value: 0,
+                        scale: this.tristar.tristarScale
+                    };
+                    const v = this.tristar.tristarData[(0, tristarMpptUtil_1.splitIdFromAdapter)(id)];
+                    this.log.debug("onStateChange" + JSON.stringify(v) + JSON.stringify(v.writeCoil));
+                    if (v.writeRegister) {
+                        twd.value = state.val;
+                        const twshr = v.writeRegister(twd);
+                        this.tristar.sendHoldingRegisterQueue.push(twshr);
+                        await this.tristar.writeHoldingRegister(this.config);
+                    }
+                    else {
+                        if (v.writeCoil) {
+                            twd.value = state.val;
+                            const twc = v.writeCoil(twd);
+                            this.tristar.sendCoilQueue.push(twc);
+                            await this.tristar.writeCoil(this.config);
+                        }
+                        else {
+                            this.log.error("Model has nor function writeCoil or write Register !!! ");
+                        }
+                    }
                 }
             }
+            else {
+                // The state was deleted
+                this.log.info(`state ${id} deleted`);
+            }
         }
-        else {
-            // The state was deleted
-            this.log.info(`state ${id} deleted`);
+        catch (Exception) {
+            this.log.error("onStateChange" + JSON.stringify(Exception));
         }
     }
 }
